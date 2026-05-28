@@ -1,0 +1,7 @@
+{
+  "name": "staysafe-backend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "commonjs",
+  "description": "StaySafe.my.id Backend Functions Scope"
+}

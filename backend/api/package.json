@@ -1,0 +1,10 @@
+{
+  "name": "staysafe-unified-api",
+  "version": "1.0.0",
+  "description": "StaySafe.my.id Unified API Handler (GET/POST Reports & Stats)",
+  "main": "index.js",
+  "type": "commonjs",
+  "dependencies": {
+    "mongodb": "^7.2.0"
+  }
+}

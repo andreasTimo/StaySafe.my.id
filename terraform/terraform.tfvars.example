@@ -1,0 +1,15 @@
+# ─── StaySafe.my.id — Terraform Input Values Template ───
+
+# ID Proyek Google Cloud Anda
+project_id = "your-gcp-project-id-here"
+
+# Region GCP (default: Jakarta)
+region     = "your-gcp-region-here"
+
+# URI koneksi Firestore MongoDB-compatible Anda (SCRAM yang telah dibuat)
+# Terraform akan menyimpan nilai ini dengan aman di GCP Secret Manager
+mongodb_uri = "mongodb://<username>:<password>@your-firestore-mongodb-endpoint:443/staysafe?loadBalanced=true&tls=true&authMechanism=SCRAM-SHA-256&retryWrites=false"
+
+
+cloudflare_zone_id   = "ZONE_ID_CLOUDFLARE_ANDA"
+cloudflare_api_token  = "API_TOKEN_CLOUDFLARE_ANDA"
