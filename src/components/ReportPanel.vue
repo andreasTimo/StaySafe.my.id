@@ -74,7 +74,7 @@ function handleSelect(report) {
     <div class="h-full bg-slate-950/80 backdrop-blur-2xl border-r border-white/10 shadow-2xl flex flex-col pt-0 md:pt-[110px]">
       
       <!-- Top Title Bar -->
-      <div class="flex items-center justify-between px-5 py-5 border-b border-white/10 flex-shrink-0 md:hidden">
+      <div class="flex items-center justify-between px-5 py-5 border-b border-white/10 flex-shrink-0">
         <div class="flex items-center gap-3">
           <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
@@ -86,14 +86,14 @@ function handleSelect(report) {
               <span class="text-white font-bold text-base tracking-tight">StaySafe</span>
               <span class="text-emerald-400 font-semibold text-base">.my.id</span>
             </div>
-            <p class="text-[10px] text-white/40 -mt-0.5 tracking-wide font-medium">Peta Pantauan Kerawanan Jakarta</p>
+            <p class="text-[10px] text-white/40 -mt-0.5 tracking-wide font-medium">Peta Pemantauan Kerawanan</p>
           </div>
         </div>
 
-        <!-- Global Close button (X) — Always Visible for outstanding UX -->
+        <!-- Global Close button (X) — Always Visible on Mobile for outstanding UX, hidden on Desktop -->
         <button
           @click="emit('close')"
-          class="w-8 h-8 flex items-center justify-center rounded-lg text-white/45 hover:text-white hover:bg-white/10 border border-white/5 hover:border-white/15 transition-all duration-200 cursor-pointer"
+          class="w-8 h-8 flex items-center justify-center rounded-lg text-white/45 hover:text-white hover:bg-white/10 border border-white/5 hover:border-white/15 transition-all duration-200 cursor-pointer md:hidden"
           title="Tutup Menu"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -255,7 +255,7 @@ function handleSelect(report) {
                     </svg>
                     {{ relativeTime(report.createdAt) }}
                   </span>
-                  <span v-if="report.address || report.location" class="flex items-center gap-0.5 font-medium tracking-wide max-w-[55%] truncate" :title="report.address || `${report.location.coordinates[1].toFixed(4)}, ${report.location.coordinates[0].toFixed(4)}`">
+                  <span v-if="report.address || report.location" class="flex items-center gap-0.5 font-semibold tracking-wide max-w-[65%] truncate text-white" :title="report.address || `${report.location.coordinates[1].toFixed(4)}, ${report.location.coordinates[0].toFixed(4)}`">
                     📍 {{ report.address || `${report.location.coordinates[1].toFixed(4)}, ${report.location.coordinates[0].toFixed(4)}` }}
                   </span>
                 </div>

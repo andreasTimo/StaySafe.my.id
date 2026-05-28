@@ -45,3 +45,6 @@ terraform.tfvars.json
 *.sln
 *.sw?
 
+# Local tools
+deploy.sh
+

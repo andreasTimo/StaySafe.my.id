@@ -167,15 +167,17 @@ function popupHtml(report) {
   const subLabel = getSubcategoryLabel(report.category, report.subcategory)
   const color = cat ? cat.color.DEFAULT : '#888'
   return `
-    <div style="min-width:190px">
+    <div style="min-width:210px;max-width:280px">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
         <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color}"></span>
         <strong style="font-size:14px;color:#fff;font-weight:700">${subLabel}</strong>
       </div>
-      <p style="margin:0 0 8px;color:rgba(255,255,255,0.8);font-size:12px;font-weight:400">${report.description}</p>
-      <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:rgba(255,255,255,0.45)">
-        <span>📍 Jakarta</span>
-        <time>${relativeTime(report.createdAt)}</time>
+      <p style="margin:0 0 10px;color:rgba(255,255,255,0.85);font-size:12.5px;font-weight:400;line-height:1.45">${report.description}</p>
+      <div style="display:flex;flex-direction:column;gap:5px;font-size:11px;color:rgba(255,255,255,0.5);border-top:1px solid rgba(255,255,255,0.08);padding-top:6px">
+        <span style="color:#ffffff;font-weight:600;display:flex;align-items:center;gap:2px">📍 ${report.address || 'Jakarta'}</span>
+        <div style="display:flex;justify-content:between;align-items:center;width:100%">
+          <time>${relativeTime(report.createdAt)}</time>
+        </div>
       </div>
     </div>
   `

@@ -120,14 +120,14 @@ watch(map, (newMap) => {
     <!-- Fullscreen Leaflet Map -->
     <MapView />
 
+    <!-- Google Maps Style Search & Hamburger Navigation Box (PC & HP Unified) (Moved outside to break stacking context) -->
+    <div class="absolute top-4 left-4 z-[1100] w-[calc(100vw-32px)] md:w-[328px] pointer-events-auto">
+      <MapSearch :is-menu-open="panelOpen" @toggle-menu="panelOpen = !panelOpen" />
+    </div>
+
     <!-- Floating Map Controls & Overlays -->
     <div class="absolute inset-0 pointer-events-none z-[1000]">
       
-      <!-- Google Maps Style Search & Hamburger Navigation Box (PC & HP Unified) -->
-      <div class="absolute top-4 left-4 z-[1100] w-[calc(100vw-32px)] md:w-[328px] pointer-events-auto">
-        <MapSearch :is-menu-open="panelOpen" @toggle-menu="panelOpen = !panelOpen" />
-      </div>
-
       <!-- Center-Bottom: Circular Red Pulsing "LAPOR" Button -->
       <div class="pointer-events-auto absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5">
         <button

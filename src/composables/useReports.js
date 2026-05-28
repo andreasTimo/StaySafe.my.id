@@ -152,7 +152,7 @@ export function useReports() {
         // Ambil data langsung dari Firestore API
         const response = await fetch(`${API_BASE}/reports`, {
           headers: {
-            'X-StaySafe-Auth': AUTH_KEY
+            'Authorization': `Bearer ${AUTH_KEY}`
           }
         })
         if (!response.ok) {
@@ -210,7 +210,7 @@ export function useReports() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-StaySafe-Auth': AUTH_KEY,
+            'Authorization': `Bearer ${AUTH_KEY}`,
           },
           body: JSON.stringify(payload),
         })

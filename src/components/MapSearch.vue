@@ -241,7 +241,7 @@ function handleEnterKey() {
     <Transition name="slide-up">
       <ul
         v-if="showSuggestions && (suggestions.length > 0 || (searchQuery.trim().length >= 2 && !loading))"
-        class="absolute left-0 right-0 mt-2 bg-slate-950/95 backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-[2000] custom-scrollbar max-h-64"
+        class="absolute left-0 right-0 mt-2 bg-slate-950/95 backdrop-blur-2xl border border-white/10 rounded-2xl overflow-y-auto shadow-2xl z-[2000] custom-scrollbar max-h-64"
       >
         <template v-if="suggestions.length > 0">
           <li
