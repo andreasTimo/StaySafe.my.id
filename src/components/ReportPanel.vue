@@ -55,7 +55,7 @@ function handleSelect(report) {
   <Transition name="fade">
     <div
       v-if="isOpen"
-      class="fixed inset-0 bg-black/60 z-[1100] lg:hidden backdrop-blur-sm"
+      class="fixed inset-0 bg-black/60 z-[1100] lg:hidden"
       @click="emit('close')"
     ></div>
   </Transition>

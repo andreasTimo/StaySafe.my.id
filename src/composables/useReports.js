@@ -150,7 +150,7 @@ export function useReports() {
     try {
       if (API_BASE) {
         // Ambil data langsung dari Firestore API
-        const response = await fetch(`${API_BASE}/reports`, {
+        const response = await fetch(`${API_BASE}/reports?t=${Date.now()}`, {
           headers: {
             'Authorization': `Bearer ${AUTH_KEY}`
           }
