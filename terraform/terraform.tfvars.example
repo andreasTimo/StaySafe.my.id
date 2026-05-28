@@ -15,3 +15,12 @@ cloudflare_zone_id   = "ZONE_ID_CLOUDFLARE_ANDA"
 cloudflare_api_token  = "API_TOKEN_CLOUDFLARE_ANDA"
 
 cloudflare_turnstile_secret_key = "KUNCI_SECRET_TURNSTILE_ASLI_ANDA"
+
+# Kunci API Resend Anda (Dapatkan dari resend.com gratis, contoh: re_1234567890)
+resend_api_key = "TEMPEL_API_KEY_RESEND_ANDA_DISINI"
+
+# Email tujuan penerima feedback (Email resmi Anda)
+resend_to_email = "YOUR_EMAIL_ADDRESS"
+
+# Email pengirim bawaan (Ubah menjadi feedback@staysafe.my.id jika domain staysafe.my.id sudah Anda verifikasi di dashboard Resend)
+resend_from_email = "onboarding@resend.dev"

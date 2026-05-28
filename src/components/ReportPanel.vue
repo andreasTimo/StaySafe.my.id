@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import { CATEGORIES, getCategoryById, getSubcategoryLabel } from '../config/categories.js'
 import { useReports } from '../composables/useReports.js'
 import { useMap } from '../composables/useMap.js'
@@ -17,7 +17,169 @@ const emit = defineEmits(['close', 'select-report'])
 const { activeFilters, toggleFilter, filteredReports, recentReports } = useReports()
 const { visualMode, setVisualMode } = useMap()
 
-const activeTab = ref('filter') // 'filter' or 'recent'
+const activeTab = ref('filter') // 'filter', 'recent', 'support', 'feedback'
+
+// Feedback & Saran States
+const feedbackType = ref('') // '', 'saran', 'bug', 'kritik', 'lainnya'
+const feedbackEmail = ref('')
+const feedbackMessage = ref('')
+const feedbackSending = ref(false)
+const feedbackSuccess = ref(false)
+const feedbackError = ref('')
+
+const feedbackTurnstileToken = ref('')
+const feedbackTurnstileWidgetId = ref(null)
+const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY || '1x00000000000000000000AA' // Fallback testing key
+
+function renderFeedbackTurnstile() {
+  if (window.turnstile && document.getElementById('feedback-turnstile-container')) {
+    try {
+      if (feedbackTurnstileWidgetId.value !== null) {
+        window.turnstile.reset(feedbackTurnstileWidgetId.value)
+      }
+      
+      feedbackTurnstileWidgetId.value = window.turnstile.render('#feedback-turnstile-container', {
+        sitekey: siteKey,
+        theme: 'dark',
+        callback: (token) => {
+          feedbackTurnstileToken.value = token
+          feedbackError.value = ''
+        },
+        'expired-callback': () => {
+          feedbackTurnstileToken.value = ''
+        },
+        'error-callback': () => {
+          feedbackTurnstileToken.value = ''
+        }
+      })
+    } catch (err) {
+      console.warn('[StaySafe Turnstile] Gagal me-render widget Turnstile feedback:', err)
+    }
+  }
+}
+
+// Watch feedbackType to load Turnstile when type is selected
+watch(feedbackType, async (newType) => {
+  if (newType) {
+    await nextTick()
+    setTimeout(renderFeedbackTurnstile, 50)
+  } else {
+    feedbackTurnstileToken.value = ''
+    if (window.turnstile && feedbackTurnstileWidgetId.value !== null) {
+      try {
+        window.turnstile.reset(feedbackTurnstileWidgetId.value)
+      } catch (e) {}
+    }
+  }
+})
+
+// Watch activeTab to load/reset Turnstile
+watch(activeTab, (newTab) => {
+  if (newTab !== 'feedback') {
+    feedbackType.value = ''
+    feedbackTurnstileToken.value = ''
+    if (window.turnstile && feedbackTurnstileWidgetId.value !== null) {
+      try {
+        window.turnstile.reset(feedbackTurnstileWidgetId.value)
+      } catch (e) {}
+    }
+  }
+})
+
+// Watch isOpen to load/reset Turnstile
+watch(() => props.isOpen, (open) => {
+  if (!open) {
+    feedbackType.value = ''
+    feedbackTurnstileToken.value = ''
+    if (window.turnstile && feedbackTurnstileWidgetId.value !== null) {
+      try {
+        window.turnstile.reset(feedbackTurnstileWidgetId.value)
+      } catch (e) {}
+    }
+  }
+})
+
+async function submitFeedback() {
+  if (!feedbackType.value) {
+    feedbackError.value = 'Silakan pilih tipe masukan terlebih dahulu.'
+    return
+  }
+  if (!feedbackMessage.value || feedbackMessage.value.trim().length === 0) {
+    feedbackError.value = 'Pesan masukan tidak boleh kosong.'
+    return
+  }
+
+  const API_BASE = import.meta.env.VITE_API_BASE_URL
+  if (API_BASE && !feedbackTurnstileToken.value) {
+    feedbackError.value = 'Harap selesaikan tantangan verifikasi Turnstile.'
+    return
+  }
+
+  feedbackSending.value = true
+  feedbackError.value = ''
+
+  try {
+    const payload = {
+      type: feedbackType.value,
+      email: feedbackEmail.value || '',
+      message: feedbackMessage.value,
+      turnstileToken: feedbackTurnstileToken.value
+    }
+
+    if (API_BASE) {
+      const res = await fetch(`${API_BASE}/feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'Gagal mengirim saran.')
+      }
+    } else {
+      // Simulasi delay lokal jika offline/dev
+      await new Promise(resolve => setTimeout(resolve, 800))
+    }
+
+    // Ubah status sukses
+    feedbackSuccess.value = true
+    feedbackEmail.value = ''
+    feedbackMessage.value = ''
+    feedbackType.value = ''
+    feedbackTurnstileToken.value = ''
+    if (window.turnstile && feedbackTurnstileWidgetId.value !== null) {
+      try {
+        window.turnstile.reset(feedbackTurnstileWidgetId.value)
+      } catch (e) {}
+    }
+  } catch (err) {
+    console.error('[Feedback] Gagal mengirim:', err)
+    feedbackError.value = err.message || 'Gagal mengirim saran. Coba beberapa saat lagi.'
+    feedbackTurnstileToken.value = ''
+    if (window.turnstile && feedbackTurnstileWidgetId.value !== null) {
+      try {
+        window.turnstile.reset(feedbackTurnstileWidgetId.value)
+      } catch (e) {}
+    }
+  } finally {
+    feedbackSending.value = false
+  }
+}
+
+function resetFeedbackForm() {
+  feedbackSuccess.value = false
+  feedbackError.value = ''
+  feedbackType.value = ''
+  feedbackTurnstileToken.value = ''
+  if (window.turnstile && feedbackTurnstileWidgetId.value !== null) {
+    try {
+      window.turnstile.reset(feedbackTurnstileWidgetId.value)
+    } catch (e) {}
+  }
+}
 
 function getCategoryMeta(categoryId) {
   return getCategoryById(categoryId) || Object.values(CATEGORIES)[0]
@@ -101,12 +263,12 @@ function handleSelect(report) {
         </button>
       </div>
 
-      <!-- Custom Styled Tab Switcher (Legenda, Laporan, Dukung) -->
+      <!-- Custom Styled Tab Switcher (Legenda, Laporan, Dukung, Saran) -->
       <div class="flex px-2 pt-3 pb-1 border-b border-white/5 flex-shrink-0 gap-1 bg-white/[0.01]">
         <!-- TAB 1: LEGENDA -->
         <button
           @click="activeTab = 'filter'"
-          class="flex-1 py-2 px-1 text-[10.5px] font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-1 cursor-pointer"
+          class="flex-1 py-2 px-0.5 text-[9.5px] font-bold rounded-lg transition-all duration-200 flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer"
           :class="activeTab === 'filter' 
             ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-inner' 
             : 'text-white/45 hover:text-white/80 hover:bg-white/5 border border-transparent'"
@@ -114,13 +276,13 @@ function handleSelect(report) {
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
           </svg>
-          Legenda
+          <span>Legenda</span>
         </button>
 
         <!-- TAB 2: LAPORAN TERBARU -->
         <button
           @click="activeTab = 'recent'"
-          class="flex-1 py-2 px-1 text-[10.5px] font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-1 cursor-pointer"
+          class="flex-1 py-2 px-0.5 text-[9.5px] font-bold rounded-lg transition-all duration-200 flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer"
           :class="activeTab === 'recent' 
             ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-inner' 
             : 'text-white/45 hover:text-white/80 hover:bg-white/5 border border-transparent'"
@@ -128,13 +290,13 @@ function handleSelect(report) {
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          Laporan
+          <span>Laporan</span>
         </button>
 
         <!-- TAB 3: DUKUNG SAYA -->
         <button
           @click="activeTab = 'support'"
-          class="flex-1 py-2 px-1 text-[10.5px] font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-1 cursor-pointer"
+          class="flex-1 py-2 px-0.5 text-[9.5px] font-bold rounded-lg transition-all duration-200 flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer"
           :class="activeTab === 'support' 
             ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-inner' 
             : 'text-white/45 hover:text-white/80 hover:bg-white/5 border border-transparent'"
@@ -142,7 +304,21 @@ function handleSelect(report) {
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </svg>
-          Dukung saya
+          <span>Dukung</span>
+        </button>
+
+        <!-- TAB 4: SARAN & FEEDBACK -->
+        <button
+          @click="activeTab = 'feedback'"
+          class="flex-1 py-2 px-0.5 text-[9.5px] font-bold rounded-lg transition-all duration-200 flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer"
+          :class="activeTab === 'feedback' 
+            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-inner' 
+            : 'text-white/45 hover:text-white/80 hover:bg-white/5 border border-transparent'"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          </svg>
+          <span>Saran</span>
         </button>
       </div>
 
@@ -335,6 +511,120 @@ function handleSelect(report) {
                 title="Dukungan Ko-fi StaySafe"
               ></iframe>
             </div>
+          </div>
+        </div>
+
+        <!-- ── TAB 4: FEEDBACK & SARAN ───────────────────────────────────── -->
+        <div v-else-if="activeTab === 'feedback'" class="space-y-5 animate-fadeIn">
+          <!-- Success State -->
+          <div v-if="feedbackSuccess" class="text-center py-8 px-4 space-y-4">
+            <div class="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400 shadow-lg shadow-emerald-500/5 animate-pulse">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+            </div>
+            <div class="space-y-2">
+              <h3 class="text-sm font-bold text-white">Saran Berhasil Dikirim!</h3>
+              <p class="text-xs text-white/50 leading-relaxed">
+                Terima kasih atas masukan Anda. Kami sangat menghargai kontribusi Anda untuk membantu StaySafe.my.id menjadi lebih baik dan bermanfaat bagi masyarakat luas.
+              </p>
+            </div>
+            <button
+              @click="resetFeedbackForm"
+              class="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/15 text-xs text-white/70 font-bold transition-all duration-200 cursor-pointer"
+            >
+              Kirim Masukan Lain
+            </button>
+          </div>
+
+          <!-- Form State -->
+          <div v-else class="space-y-4">
+            <div class="space-y-1">
+              <h3 class="text-sm font-bold text-white">Feedback & Saran</h3>
+              <p class="text-[11px] text-white/40 leading-relaxed">
+                Punya ide fitur baru, menemukan bug, atau ingin memberikan apresiasi? Berikan masukan Anda secara langsung di bawah ini.
+              </p>
+            </div>
+
+            <form @submit.prevent="submitFeedback" class="space-y-4">
+              <!-- Error Alert -->
+              <div v-if="feedbackError" class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold">
+                {{ feedbackError }}
+              </div>
+
+              <!-- Feedback Type -->
+              <div class="space-y-1.5">
+                <label class="text-[10px] uppercase tracking-wider font-bold text-white/35">Tipe Masukan</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button
+                    v-for="t in [
+                      { id: 'saran', label: '💡 Saran Fitur' },
+                      { id: 'bug', label: '🪲 Laporan Bug' },
+                      { id: 'kritik', label: '💬 Apresiasi' },
+                      { id: 'lainnya', label: '❓ Lainnya' }
+                    ]"
+                    :key="t.id"
+                    type="button"
+                    @click="feedbackType = t.id"
+                    class="h-8.5 rounded-xl border text-[10px] font-bold transition-all duration-150 flex items-center justify-center cursor-pointer select-none"
+                    :class="feedbackType === t.id
+                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-extrabold shadow-sm'
+                      : 'bg-white/[0.01] border-white/5 text-white/50 hover:text-white/80 hover:bg-white/5'"
+                  >
+                    {{ t.label }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- Email (Optional) -->
+              <div class="space-y-1.5">
+                <label for="feedback_email" class="text-[10px] uppercase tracking-wider font-bold text-white/35 flex justify-between">
+                  <span>Email Anda</span>
+                  <span class="text-white/20 capitalize font-medium">Opsional</span>
+                </label>
+                <input
+                  id="feedback_email"
+                  v-model="feedbackEmail"
+                  type="email"
+                  placeholder="nama@email.com (jika ingin dibalas)"
+                  class="w-full h-10 px-3 rounded-xl bg-slate-950/60 border border-white/10 focus:border-emerald-500/30 focus:outline-none text-xs text-white placeholder-white/20 transition-all font-semibold"
+                />
+              </div>
+
+              <!-- Message -->
+              <div class="space-y-1.5">
+                <label for="feedback_msg" class="text-[10px] uppercase tracking-wider font-bold text-white/35 flex justify-between">
+                  <span>Pesan Masukan</span>
+                  <span :class="feedbackMessage.length > 1000 ? 'text-rose-400' : 'text-white/20'">{{ feedbackMessage.length }}/1000</span>
+                </label>
+                <textarea
+                  id="feedback_msg"
+                  v-model="feedbackMessage"
+                  rows="5"
+                  maxlength="1000"
+                  placeholder="Ceritakan ide, keluhan, atau apresiasi Anda kepada pengembang StaySafe..."
+                  class="w-full p-3 rounded-xl bg-slate-950/60 border border-white/10 focus:border-emerald-500/30 focus:outline-none text-xs text-white placeholder-white/20 transition-all resize-none font-semibold leading-relaxed"
+                ></textarea>
+              </div>
+
+              <!-- Cloudflare Turnstile Verification -->
+              <div v-show="feedbackType" class="flex flex-col items-center py-1">
+                <div id="feedback-turnstile-container"></div>
+              </div>
+
+              <!-- Submit Button -->
+              <button
+                type="submit"
+                :disabled="feedbackSending"
+                class="w-full h-11 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 active:scale-98 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none"
+              >
+                <svg v-if="feedbackSending" class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span v-else>💡 Kirim Masukan</span>
+              </button>
+            </form>
           </div>
         </div>
 

@@ -195,7 +195,7 @@ function handleEnterKey() {
 <template>
   <div class="relative w-full pointer-events-auto">
     <!-- Google Maps Style Navigation Card -->
-    <div class="flex flex-col bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl transition-all duration-200 overflow-hidden">
+    <div class="flex flex-col bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl transition-all duration-200">
       
       <!-- Top Row: Hamburger + Input + Toggle Mode -->
       <div class="flex items-center h-12 px-2.5 gap-2">
@@ -224,7 +224,7 @@ function handleEnterKey() {
             title="Pilih Wilayah Regional Peta"
           >
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>
-            <span>{{ REGIONS[currentRegion]?.label.replace('DI ', '').replace(' & Jawa Tengah', '').replace('JABODETABEKJUR', 'JABODETABEK') }}</span>
+            <span>{{ REGIONS[currentRegion]?.shortLabel || REGIONS[currentRegion]?.label }}</span>
             <svg class="w-2.5 h-2.5 text-white/50 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
             </svg>
@@ -233,7 +233,7 @@ function handleEnterKey() {
           <!-- Regional Dropdown Options List -->
           <div
             v-if="showRegionDropdown"
-            class="absolute top-10 left-0 w-48 bg-slate-950/95 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl z-[2200] overflow-hidden custom-scrollbar"
+            class="absolute top-10 left-0 w-48 max-h-64 overflow-y-auto bg-slate-950/95 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl z-[2200] custom-scrollbar"
           >
             <button
               v-for="reg in Object.values(REGIONS)"

@@ -37,3 +37,22 @@ variable "cloudflare_turnstile_secret_key" {
   default     = ""
   sensitive   = true
 }
+
+variable "resend_api_key" {
+  type        = string
+  description = "API Key Resend untuk pengiriman email feedback"
+  default     = ""
+  sensitive   = true
+}
+
+variable "resend_to_email" {
+  type        = string
+  description = "Email tujuan penerima feedback"
+  default     = "support@staysafe.my.id"
+}
+
+variable "resend_from_email" {
+  type        = string
+  description = "Email pengirim feedback (default onboarding@resend.dev jika belum verifikasi domain)"
+  default     = "onboarding@resend.dev"
+}

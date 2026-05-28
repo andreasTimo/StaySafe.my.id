@@ -50,6 +50,9 @@ resource "google_cloudfunctions2_function" "api" {
       CLOUDFLARE_ZONE_ID              = var.cloudflare_zone_id
       CLOUDFLARE_API_TOKEN            = var.cloudflare_api_token
       CLOUDFLARE_TURNSTILE_SECRET_KEY = var.cloudflare_turnstile_secret_key
+      RESEND_API_KEY                  = var.resend_api_key
+      RESEND_TO_EMAIL                 = var.resend_to_email
+      RESEND_FROM_EMAIL               = var.resend_from_email
     }
 
     # Membaca MONGODB_URI dari Secret Manager secara aman!

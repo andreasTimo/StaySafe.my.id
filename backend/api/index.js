@@ -251,6 +251,132 @@ async function handlePostReport(req, res) {
   }
 }
 
+// Handler baru: POST /feedback (menyimpan masukan pengguna ke database)
+// Handler baru: POST /feedback (Mengirim masukan langsung ke email via Resend, bypass MongoDB)
+async function handlePostFeedback(req, res) {
+  try {
+    const { type, email, message, turnstileToken } = req.body;
+
+    if (!type || !message) {
+      return res.status(400).json({ error: 'Tipe masukan dan pesan wajib diisi.' });
+    }
+
+    if (message.trim().length === 0) {
+      return res.status(400).json({ error: 'Pesan tidak boleh kosong.' });
+    }
+
+    if (message.length > 1000) {
+      return res.status(400).json({ error: 'Pesan masukan maksimal 1000 karakter.' });
+    }
+
+    // Cloudflare Turnstile Server-Side Validation untuk Feedback
+    const turnstileSecret = process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
+    if (turnstileSecret) {
+      if (!turnstileToken) {
+        return res.status(400).json({ error: 'Verifikasi keamanan Turnstile wajib diisi.' });
+      }
+
+      const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+      
+      try {
+        const formData = new URLSearchParams();
+        formData.append('secret', turnstileSecret);
+        formData.append('response', turnstileToken);
+        formData.append('remoteip', clientIp);
+
+        const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        });
+
+        const verifyData = await verifyRes.json();
+        if (!verifyData.success) {
+          console.warn('[StaySafe Turnstile] Verifikasi feedback gagal:', verifyData['error-codes']);
+          return res.status(400).json({ error: 'Verifikasi keamanan Turnstile gagal. Harap coba kembali.' });
+        }
+        console.log('[StaySafe Turnstile] Verifikasi feedback sukses untuk IP:', clientIp);
+      } catch (err) {
+        console.error('[StaySafe Turnstile] Error saat verifikasi feedback:', err);
+        return res.status(500).json({ error: 'Gagal memverifikasi keamanan Turnstile.' });
+      }
+    }
+
+    const resendApiKey = process.env.RESEND_API_KEY;
+    const toEmail = process.env.RESEND_TO_EMAIL || 'support@staysafe.my.id';
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+
+    if (resendApiKey) {
+      // Format email HTML premium yang sangat rapi dan berkelas
+      const subject = `[StaySafe ${type.toUpperCase()}] Masukan Baru`;
+      const htmlContent = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <span style="font-size: 40px;">💡</span>
+            <h2 style="color: #0f172a; margin: 10px 0 0 0; font-size: 20px; font-weight: 800; tracking-tight: -0.025em;">Masukan Pengguna Baru</h2>
+            <p style="color: #64748b; font-size: 12px; margin: 5px 0 0 0;">StaySafe.my.id Feedback System</p>
+          </div>
+          
+          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 10px 0; color: #64748b; font-size: 12px; font-weight: bold; width: 130px; text-transform: uppercase; letter-spacing: 0.05em;">Tipe Masukan</td>
+                <td style="padding: 10px 0; color: #10b981; font-size: 13px; font-weight: 800; text-transform: uppercase;">${type}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 10px 0; color: #64748b; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em;">Email Pengirim</td>
+                <td style="padding: 10px 0; color: #0f172a; font-size: 13px; font-weight: 600;">${email ? `<a href="mailto:${email}" style="color: #3b82f6; text-decoration: none;">${email}</a>` : '<span style="color: #94a3b8; font-style: italic;">Anonim</span>'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 0; color: #64748b; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em;">Waktu Kirim</td>
+                <td style="padding: 10px 0; color: #0f172a; font-size: 13px;">${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB</td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin-top: 20px;">
+            <p style="color: #334155; font-size: 12px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Pesan Masukan:</p>
+            <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; color: #334155; font-size: 13px; line-height: 1.6; white-space: pre-wrap; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">${message}</div>
+          </div>
+          
+          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0 15px 0;" />
+          <p style="font-size: 10px; color: #94a3b8; text-align: center; margin: 0; font-weight: 500;">Pesan ini diteruskan secara otomatis oleh Google Cloud Run Function StaySafe.</p>
+        </div>
+      `;
+
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: `StaySafe Feedback <${fromEmail}>`,
+          to: toEmail,
+          subject: subject,
+          html: htmlContent
+        })
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        console.error('[StaySafe Resend] Gagal memicu email ke Resend:', errData);
+        throw new Error(errData.message || `Gagal mengirim email via Resend (Status ${response.status})`);
+      }
+      console.log('[StaySafe Resend] Berhasil mengirim email feedback ke:', toEmail);
+    } else {
+      console.warn('[StaySafe Resend] RESEND_API_KEY tidak dikonfigurasi. Simulasi pengiriman lokal berhasil dilakukan.');
+    }
+
+    return res.status(201).json({ success: true, message: 'Masukan berhasil disalurkan langsung ke email developer!' });
+  } catch (error) {
+    console.error('Error sending feedback email:', error);
+    return res.status(500).json({ error: error.message || 'Internal Server Error' });
+  }
+}
+
 // Handler 3: GET /reports/stats (getStats)
 async function handleGetStats(req, res) {
   try {
@@ -367,6 +493,14 @@ exports.api = async (req, res) => {
       return handleGetReports(req, res);
     } else if (req.method === 'POST') {
       return handlePostReport(req, res);
+    } else {
+      return res.status(405).json({ error: 'Method Not Allowed' });
+    }
+  }
+
+  if (path === '/feedback' || path === '/feedback/') {
+    if (req.method === 'POST') {
+      return handlePostFeedback(req, res);
     } else {
       return res.status(405).json({ error: 'Method Not Allowed' });
     }
