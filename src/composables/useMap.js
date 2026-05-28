@@ -433,7 +433,19 @@ export function useMap() {
 
     // Render Heatmaps
     if (showHeatmap) {
-      heatLayers.forEach((l) => { if (!instance.hasLayer(l)) instance.addLayer(l) })
+      heatLayers.forEach((l) => { 
+        if (!instance.hasLayer(l)) instance.addLayer(l)
+      })
+      // Paksa menggambar ulang seluruh canvas heatmap setelah animasi/zoom selesai agar koordinat grid sinkron sempurna
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          heatLayers.forEach((l) => {
+            if (instance.hasLayer(l)) {
+              l.redraw()
+            }
+          })
+        }, 50)
+      })
     } else {
       heatLayers.forEach((l) => { if (instance.hasLayer(l)) instance.removeLayer(l) })
     }
