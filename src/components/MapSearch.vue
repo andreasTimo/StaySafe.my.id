@@ -168,10 +168,10 @@ function handleEnterKey() {
           class="w-9 h-9 rounded-xl flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors duration-150 cursor-pointer"
           :title="isMenuOpen ? 'Tutup Menu' : 'Buka Menu'"
         >
-          <svg v-if="isMenuOpen" class="w-5.5 h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg v-if="isMenuOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
           </svg>
-          <svg v-else class="w-5.5 h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
           </svg>
         </button>
@@ -262,7 +262,7 @@ function handleEnterKey() {
             <!-- Mode 2: Cari Kejadian Suggestions (Premium visual style) -->
             <div v-else class="flex items-start gap-3">
               <span
-                class="w-5.5 h-5.5 rounded-lg flex items-center justify-center text-[10px] font-bold text-white shadow-inner flex-shrink-0 group-hover:scale-105 transition-transform"
+                class="w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-bold text-white shadow-inner flex-shrink-0 group-hover:scale-105 transition-transform"
                 :style="{ background: item.color + '20', border: '1px solid ' + item.color + '30', color: item.color }"
               >
                 {{ item.icon }}
