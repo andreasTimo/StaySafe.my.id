@@ -71,23 +71,41 @@ function searchIncidentSuggestions(query) {
     return
   }
 
-  const q = query.toLowerCase().trim()
+  // 1. Bersihkan query dan pecah menjadi token kata kunci (case-insensitive)
+  const cleanQuery = query.toLowerCase().trim()
   
-  // Filter laporan berdasarkan kategori, subkategori, deskripsi, atau alamat kelurahan
+  // Daftar kata hubung/stopwords yang sebaiknya diabaikan agar tidak mengganggu pencarian
+  const stopwords = ['di', 'ke', 'dari', 'daerah', 'jalan', 'jl', 'jl.']
+  
+  // Pecah berdasarkan spasi, abaikan spasi ganda dan stopwords
+  const tokens = cleanQuery.split(/\s+/)
+    .filter(t => t && !stopwords.includes(t))
+
+  if (tokens.length === 0) {
+    suggestions.value = []
+    return
+  }
+
+  // 2. Filter laporan di mana SETIAP token harus cocok dengan setidaknya salah satu field laporan (Kategori, Subkategori, Deskripsi, atau Alamat)
   const matches = filteredReports.value.filter(r => {
     const cat = getCategoryById(r.category)
     const catLabel = cat ? cat.label.toLowerCase() : ''
     const subLabel = getSubcategoryLabel(r.category, r.subcategory).toLowerCase()
     const desc = r.description.toLowerCase()
     const addr = (r.address || '').toLowerCase()
-    
-    return catLabel.includes(q) || subLabel.includes(q) || desc.includes(q) || addr.includes(q)
+
+    // Cari kecocokan untuk semua token (Logika AND)
+    return tokens.every(token => {
+      return catLabel.includes(token) || 
+             subLabel.includes(token) || 
+             desc.includes(token) || 
+             addr.includes(token)
+    })
   })
 
-  // Urutkan berdasarkan tanggal terbaru dan batasi maksimal 5 saran
+  // 3. Urutkan berdasarkan tanggal terbaru dan TAMPILKAN SEMUA tanpa batasan slice(0, 5) untuk kejadian agar scroll berfungsi!
   suggestions.value = matches
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    .slice(0, 5)
     .map(r => {
       const cat = getCategoryById(r.category)
       return {
@@ -268,15 +286,16 @@ function handleEnterKey() {
                 {{ item.icon }}
               </span>
               <div class="flex-1 min-w-0">
-                <div class="flex items-baseline justify-between gap-2">
-                  <p class="text-xs font-bold text-white/90 truncate" :style="{ color: item.color }">
+                <div class="flex items-center justify-between gap-2">
+                  <p class="text-xs font-bold" :style="{ color: item.color }">
                     {{ item.short_name }}
                   </p>
-                  <span class="text-[8px] text-white/30 font-medium tracking-wide flex-shrink-0">
-                    {{ item.rawReport.address ? item.rawReport.address.split(',')[0] : 'Jakarta' }}
-                  </span>
                 </div>
-                <p class="text-[10.5px] text-white/45 truncate mt-0.5 leading-relaxed">{{ item.display_name }}</p>
+                <p class="text-[10.5px] text-white/40 truncate mt-0.5 leading-relaxed">{{ item.display_name }}</p>
+                <!-- Full Address displayed in bold white under the description -->
+                <p class="text-[9.5px] text-white font-bold mt-1 flex items-center gap-0.5">
+                  <span class="text-white/60">📍</span> {{ item.rawReport.address || 'Jakarta' }}
+                </p>
               </div>
             </div>
           </li>
