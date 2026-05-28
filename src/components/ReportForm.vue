@@ -17,21 +17,53 @@ const emit = defineEmits(['update:modelValue', 'submit'])
 
 const dialogRef = ref(null)
 
-// Form state
+// Form state & Cloudflare Turnstile variables
 const selectedCategory = ref('')
 const selectedSubcategory = ref('')
 const description = ref('')
 const isSubmitting = ref(false)
+const turnstileToken = ref('')
+const turnstileWidgetId = ref(null)
+const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY || '1x00000000000000000000AA' // Fallback testing key
 
 // Validation errors
 const errors = ref({
   category: '',
   subcategory: '',
-  description: ''
+  description: '',
+  turnstile: ''
 })
 
 // Convert CATEGORIES object to array for iteration
 const categoryList = computed(() => Object.values(CATEGORIES))
+
+// Inisialisasi dan Render Widget Turnstile
+function renderTurnstile() {
+  if (window.turnstile && document.getElementById('turnstile-container')) {
+    try {
+      if (turnstileWidgetId.value !== null) {
+        window.turnstile.reset(turnstileWidgetId.value)
+      }
+      
+      turnstileWidgetId.value = window.turnstile.render('#turnstile-container', {
+        sitekey: siteKey,
+        theme: 'dark',
+        callback: (token) => {
+          turnstileToken.value = token
+          errors.value.turnstile = ''
+        },
+        'expired-callback': () => {
+          turnstileToken.value = ''
+        },
+        'error-callback': () => {
+          turnstileToken.value = ''
+        }
+      })
+    } catch (err) {
+      console.warn('[StaySafe Turnstile] Gagal me-render widget Turnstile:', err)
+    }
+  }
+}
 
 // Watch modelValue to open/close dialog
 watch(() => props.modelValue, async (open) => {
@@ -39,6 +71,8 @@ watch(() => props.modelValue, async (open) => {
   if (!dialogRef.value) return
   if (open) {
     dialogRef.value.showModal()
+    // Berikan delay pendek agar elemen penampung container Turnstile sudah siap di DOM
+    setTimeout(renderTurnstile, 150)
   } else {
     dialogRef.value.close()
     resetForm()
@@ -82,6 +116,13 @@ watch(selectedCategory, () => {
   selectedSubcategory.value = ''
   errors.value.category = ''
   errors.value.subcategory = ''
+  // Reset token Turnstile karena input berganti
+  turnstileToken.value = ''
+  if (window.turnstile && turnstileWidgetId.value !== null) {
+    try {
+      window.turnstile.reset(turnstileWidgetId.value)
+    } catch (e) {}
+  }
 })
 
 // Form actions
@@ -90,12 +131,18 @@ function resetForm() {
   selectedSubcategory.value = ''
   description.value = ''
   isSubmitting.value = false
-  errors.value = { category: '', subcategory: '', description: '' }
+  turnstileToken.value = ''
+  if (window.turnstile && turnstileWidgetId.value !== null) {
+    try {
+      window.turnstile.reset(turnstileWidgetId.value)
+    } catch (e) {}
+  }
+  errors.value = { category: '', subcategory: '', description: '', turnstile: '' }
 }
 
 function validate() {
   let valid = true
-  errors.value = { category: '', subcategory: '', description: '' }
+  errors.value = { category: '', subcategory: '', description: '', turnstile: '' }
 
   if (!selectedCategory.value) {
     errors.value.category = 'Pilih kategori kejadian'
@@ -113,6 +160,12 @@ function validate() {
     valid = false
   }
 
+  // Validasi Turnstile wajib terisi jika subkategori dipilih
+  if (selectedSubcategory.value && !turnstileToken.value) {
+    errors.value.turnstile = 'Harap selesaikan tantangan verifikasi Turnstile'
+    valid = false
+  }
+
   return valid
 }
 
@@ -125,6 +178,7 @@ async function handleSubmit() {
     category: selectedCategory.value,
     subcategory: selectedSubcategory.value,
     description: description.value.trim(),
+    turnstileToken: turnstileToken.value, // Token Turnstile
     location: {
       type: 'Point',
       coordinates: [
@@ -140,6 +194,8 @@ async function handleSubmit() {
 function selectSubcategory(subId) {
   selectedSubcategory.value = subId
   errors.value.subcategory = ''
+  // Memicu re-render Turnstile agar siap divalidasi
+  setTimeout(renderTurnstile, 50)
 }
 </script>
 
@@ -275,6 +331,12 @@ function selectSubcategory(subId) {
               </span>
             </div>
             <p v-if="errors.description" class="text-red-400 text-xs mt-1.5">{{ errors.description }}</p>
+          </div>
+
+          <!-- Cloudflare Turnstile Verification -->
+          <div v-show="selectedSubcategory" class="flex flex-col items-center py-1">
+            <div id="turnstile-container"></div>
+            <p v-if="errors.turnstile" class="text-red-400 text-xs mt-1.5 text-center font-semibold">{{ errors.turnstile }}</p>
           </div>
 
           <!-- Submit -->

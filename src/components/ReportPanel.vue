@@ -60,10 +60,9 @@ function handleSelect(report) {
     ></div>
   </Transition>
 
-  <!-- Left Sidebar Panel Drawer -->
   <div
-    class="fixed top-0 left-0 h-full w-[360px] max-w-[calc(100vw-16px)] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
-    :class="[isOpen ? 'translate-x-0' : '-translate-x-full', 'z-[1200] md:z-[1050]']"
+    class="fixed top-0 left-0 bottom-0 w-[360px] max-w-[calc(100vw-16px)] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+    :class="[isOpen ? 'translate-x-0' : '-translate-x-full', 'z-[1200] lg:z-[1050]']"
     @click.stop
     @mousedown.stop
     @mouseup.stop
@@ -71,7 +70,7 @@ function handleSelect(report) {
     @touchmove.stop
     @wheel.stop
   >
-    <div class="h-full bg-slate-950/80 backdrop-blur-2xl border-r border-white/10 shadow-2xl flex flex-col pt-0 md:pt-[110px]">
+    <div class="h-full bg-slate-950/80 backdrop-blur-2xl border-r border-white/10 shadow-2xl flex flex-col pt-0 lg:pt-[110px]">
       
       <!-- Top Title Bar -->
       <div class="flex items-center justify-between px-5 py-5 border-b border-white/10 flex-shrink-0">
@@ -93,7 +92,7 @@ function handleSelect(report) {
         <!-- Global Close button (X) — Always Visible on Mobile for outstanding UX, hidden on Desktop -->
         <button
           @click="emit('close')"
-          class="w-8 h-8 flex items-center justify-center rounded-lg text-white/45 hover:text-white hover:bg-white/10 border border-white/5 hover:border-white/15 transition-all duration-200 cursor-pointer md:hidden"
+          class="w-8 h-8 flex items-center justify-center rounded-lg text-white/45 hover:text-white hover:bg-white/10 border border-white/5 hover:border-white/15 transition-all duration-200 cursor-pointer lg:hidden"
           title="Tutup Menu"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

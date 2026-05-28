@@ -47,8 +47,9 @@ resource "google_cloudfunctions2_function" "api" {
     service_account_email = google_service_account.backend_sa.email
 
     environment_variables = {
-      CLOUDFLARE_ZONE_ID   = var.cloudflare_zone_id
-      CLOUDFLARE_API_TOKEN = var.cloudflare_api_token
+      CLOUDFLARE_ZONE_ID              = var.cloudflare_zone_id
+      CLOUDFLARE_API_TOKEN            = var.cloudflare_api_token
+      CLOUDFLARE_TURNSTILE_SECRET_KEY = var.cloudflare_turnstile_secret_key
     }
 
     # Membaca MONGODB_URI dari Secret Manager secara aman!

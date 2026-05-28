@@ -30,3 +30,10 @@ variable "cloudflare_api_token" {
   default     = ""
   sensitive   = true
 }
+
+variable "cloudflare_turnstile_secret_key" {
+  type        = string
+  description = "Cloudflare Turnstile Secret Key untuk verifikasi server-side"
+  default     = ""
+  sensitive   = true
+}

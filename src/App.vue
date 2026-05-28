@@ -115,7 +115,7 @@ watch(map, (newMap) => {
 </script>
 
 <template>
-  <div id="app-root" class="relative w-screen h-screen overflow-hidden bg-slate-950 font-sans">
+  <div id="app-root" class="relative w-screen h-[100dvh] overflow-hidden bg-slate-950 font-sans">
     
     <!-- Fullscreen Leaflet Map -->
     <MapView />
@@ -129,7 +129,7 @@ watch(map, (newMap) => {
     <div class="absolute inset-0 pointer-events-none z-[1000]">
       
       <!-- Center-Bottom: Circular Red Pulsing "LAPOR" Button -->
-      <div class="pointer-events-auto absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5">
+      <div class="pointer-events-auto fixed bottom-[calc(3rem+env(safe-area-inset-bottom))] lg:bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5">
         <button
           @click="startReport"
           class="relative w-15 h-15 rounded-full bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-xl shadow-red-500/40 hover:shadow-red-500/60 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center group cursor-pointer"
@@ -147,7 +147,7 @@ watch(map, (newMap) => {
       </div>
 
       <!-- Bottom-Right: Google Maps Style Controls Stack (Recenter + Zoom +/-) -->
-      <div class="pointer-events-auto absolute bottom-8 right-4 flex flex-col gap-2.5 items-center z-[1100]">
+      <div class="pointer-events-auto fixed bottom-[calc(3rem+env(safe-area-inset-bottom))] lg:bottom-8 right-4 flex flex-col gap-2.5 items-center z-[1100]">
         
         <!-- Recenter Button (Premium Dark Glassmorphism) -->
         <button
@@ -189,7 +189,7 @@ watch(map, (newMap) => {
       <!-- Bottom-Left: Interactive Collapsible Map Legend (Dynamic Sliding Offset) -->
       <MapLegend
         :reports="filteredReports"
-        class="fixed bottom-6 z-[1000] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        class="fixed bottom-[calc(2.5rem+env(safe-area-inset-bottom))] lg:bottom-6 z-[1000] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
         :class="panelOpen ? 'left-4 md:left-[376px]' : 'left-4'"
       />
     </div>
@@ -212,7 +212,7 @@ watch(map, (newMap) => {
     <Transition name="toast">
       <div
         v-if="toastVisible"
-        class="fixed bottom-28 left-1/2 -translate-x-1/2 z-[3000] bg-slate-900/85 backdrop-blur-xl border border-white/10 rounded-xl px-5 py-3.5 text-xs font-semibold text-white/90 shadow-2xl max-w-[90vw] text-center"
+        class="fixed bottom-[calc(8.5rem+env(safe-area-inset-bottom))] lg:bottom-28 left-1/2 -translate-x-1/2 z-[3000] bg-slate-900/85 backdrop-blur-xl border border-white/10 rounded-xl px-5 py-3.5 text-xs font-semibold text-white/90 shadow-2xl max-w-[90vw] text-center"
       >
         {{ toastMessage }}
       </div>

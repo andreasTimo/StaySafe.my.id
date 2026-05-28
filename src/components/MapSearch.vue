@@ -1,8 +1,9 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useMap } from '../composables/useMap'
 import { useReports } from '../composables/useReports'
 import { getCategoryById, getSubcategoryLabel } from '../config/categories.js'
+import { REGIONS } from '../config/regions.js'
 
 const props = defineProps({
   isMenuOpen: {
@@ -13,17 +14,34 @@ const props = defineProps({
 
 const emit = defineEmits(['toggle-menu'])
 
-const { map, showReportDetail } = useMap()
-const { filteredReports } = useReports()
+const { map, showReportDetail, changeRegion } = useMap()
+const { filteredReports, currentRegion } = useReports()
 
 const searchQuery = ref('')
 const searchMode = ref('place') // 'place' (General) or 'incident' (Crime Data)
 const suggestions = ref([])
 const showSuggestions = ref(false)
+const showRegionDropdown = ref(false)
 const loading = ref(false)
 let debounceTimer = null
 
-// Fungsi pencarian lokasi umum menggunakan Nominatim OSM API dengan batasan wilayah Jakarta
+// Mengubah placeholder secara dinamis berdasarkan kluster regional aktif
+const placeholderText = computed(() => {
+  if (searchMode.value === 'place') {
+    const label = REGIONS[currentRegion.value]?.label || 'Jakarta'
+    return `Cari jalan / wilayah di ${label}...`
+  }
+  return 'Ketik jenis kejahatan (begal, copet)...'
+})
+
+// Fungsi memproses pemilihan regional baru dari dropdown
+function selectRegion(regionId) {
+  changeRegion(regionId)
+  showRegionDropdown.value = false
+  searchQuery.value = '' // Reset pencarian lama
+}
+
+// Fungsi pencarian lokasi umum menggunakan Nominatim OSM API dengan batasan kluster wilayah aktif secara dinamis
 async function fetchPlaceSuggestions(query) {
   if (!query || query.trim().length < 3) {
     suggestions.value = []
@@ -32,7 +50,8 @@ async function fetchPlaceSuggestions(query) {
 
   loading.value = true
   try {
-    const bbox = '106.6,-6.38,107.0,-6.08' // Bounding box Jabodetabek
+    const activeReg = REGIONS[currentRegion.value] || REGIONS.jabodetabekjur
+    const bbox = activeReg.bbox
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=id&viewbox=${bbox}&bounded=1&limit=5&addressdetails=1`
     
     const res = await fetch(url, {
@@ -183,7 +202,7 @@ function handleEnterKey() {
         <!-- 1. Hamburger Menu Toggle Button -->
         <button
           @click="emit('toggle-menu')"
-          class="w-9 h-9 rounded-xl flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors duration-150 cursor-pointer"
+          class="w-9 h-9 rounded-xl flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors duration-150 cursor-pointer flex-shrink-0"
           :title="isMenuOpen ? 'Tutup Menu' : 'Buka Menu'"
         >
           <svg v-if="isMenuOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,11 +216,46 @@ function handleEnterKey() {
         <!-- Divider -->
         <div class="w-[1px] h-6 bg-white/10 flex-shrink-0"></div>
 
+        <!-- 1.5. Regional Selector Dropdown Button (Premium Glassmorphism) -->
+        <div class="relative flex-shrink-0 z-[2200]">
+          <button
+            @click="showRegionDropdown = !showRegionDropdown"
+            class="h-8 px-2 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/15 text-[10px] font-bold text-emerald-400 hover:text-emerald-300 transition-all duration-150 flex items-center gap-1 cursor-pointer select-none"
+            title="Pilih Wilayah Regional Peta"
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>
+            <span>{{ REGIONS[currentRegion]?.label.replace('DI ', '').replace(' & Jawa Tengah', '').replace('JABODETABEKJUR', 'JABODETABEK') }}</span>
+            <svg class="w-2.5 h-2.5 text-white/50 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          <!-- Regional Dropdown Options List -->
+          <div
+            v-if="showRegionDropdown"
+            class="absolute top-10 left-0 w-48 bg-slate-950/95 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl z-[2200] overflow-hidden custom-scrollbar"
+          >
+            <button
+              v-for="reg in Object.values(REGIONS)"
+              :key="reg.id"
+              @click="selectRegion(reg.id)"
+              class="w-full text-left px-3.5 py-2.5 text-xs text-white/80 hover:text-white hover:bg-white/5 border-b border-white/5 last:border-b-0 transition-colors duration-150 flex items-center justify-between font-bold cursor-pointer"
+              :class="currentRegion === reg.id ? 'bg-emerald-500/10 text-emerald-400' : ''"
+            >
+              <span>{{ reg.label }}</span>
+              <span v-if="currentRegion === reg.id" class="text-emerald-400 text-xs">✓</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="w-[1px] h-6 bg-white/10 flex-shrink-0"></div>
+
         <!-- 2. Main Text Input -->
         <input
           v-model="searchQuery"
           type="text"
-          :placeholder="searchMode === 'place' ? 'Cari jalan / wilayah di Jakarta...' : 'Ketik jenis kejahatan (begal, copet)...'"
+          :placeholder="placeholderText"
           @focus="showSuggestions = suggestions.length > 0"
           @blur="closeSuggestionsDelay"
           @keydown.enter="handleEnterKey"

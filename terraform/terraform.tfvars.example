@@ -13,3 +13,5 @@ mongodb_uri = "mongodb://<username>:<password>@your-firestore-mongodb-endpoint:4
 
 cloudflare_zone_id   = "ZONE_ID_CLOUDFLARE_ANDA"
 cloudflare_api_token  = "API_TOKEN_CLOUDFLARE_ANDA"
+
+cloudflare_turnstile_secret_key = "KUNCI_SECRET_TURNSTILE_ASLI_ANDA"

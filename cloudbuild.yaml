@@ -4,6 +4,7 @@ steps:
     'build',
     '--build-arg', 'VITE_API_BASE_URL=$_VITE_API_BASE_URL',
     '--build-arg', 'VITE_API_AUTH_KEY=$_VITE_API_AUTH_KEY',
+    '--build-arg', 'VITE_TURNSTILE_SITEKEY=$_VITE_TURNSTILE_SITEKEY',
     '-t', 'asia-southeast1-docker.pkg.dev/staysafe-project-497610/staysafe-frontend/frontend-image:latest',
     '.'
   ]

@@ -144,11 +144,48 @@ async function handleGetReports(req, res) {
 // Handler 2: POST /reports (postReport)
 async function handlePostReport(req, res) {
   try {
-    const { category, subcategory, description, latitude, longitude } = req.body || {};
+    const { category, subcategory, description, latitude, longitude, turnstileToken } = req.body || {};
 
     // 1. Mandatory Fields Validation
     if (!category || !subcategory || !description || latitude === undefined || longitude === undefined) {
       return res.status(400).json({ error: 'Semua field wajib diisi.' });
+    }
+
+    // 1.5. Cloudflare Turnstile Server-Side Validation
+    const turnstileSecret = process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
+    if (turnstileSecret) {
+      if (!turnstileToken) {
+        return res.status(400).json({ error: 'Verifikasi keamanan Turnstile wajib diisi.' });
+      }
+
+      const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+      
+      try {
+        const formData = new URLSearchParams();
+        formData.append('secret', turnstileSecret);
+        formData.append('response', turnstileToken);
+        formData.append('remoteip', clientIp);
+
+        const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        });
+
+        const verifyData = await verifyRes.json();
+        if (!verifyData.success) {
+          console.warn('[StaySafe Turnstile] Verifikasi gagal:', verifyData['error-codes']);
+          return res.status(400).json({ error: 'Verifikasi keamanan Turnstile gagal. Harap coba kembali.' });
+        }
+        console.log('[StaySafe Turnstile] Verifikasi token sukses untuk IP:', clientIp);
+      } catch (err) {
+        console.error('[StaySafe Turnstile] Error saat verifikasi:', err);
+        return res.status(500).json({ error: 'Gagal memverifikasi keamanan Turnstile.' });
+      }
+    } else {
+      console.warn('[StaySafe Turnstile] Kunci rahasia Turnstile tidak terkonfigurasi. Verifikasi dilewati.');
     }
 
     // 2. Category & Subcategory Validation

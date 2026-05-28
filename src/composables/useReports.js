@@ -3,6 +3,7 @@
  */
 
 import { ref, computed } from 'vue'
+import { REGIONS, detectRegionFromCoords } from '../config/regions.js'
 
 // Helper functions for mock dates
 function daysAgo(d) {
@@ -16,7 +17,7 @@ function hoursAgo(h) {
   return new Date(Date.now() - h * 3600_000)
 }
 
-// 65 realistic mock reports across Jakarta with human-readable addresses
+// 65+ realistic mock reports across Jakarta and regional clusters with human-readable addresses
 const MOCK_REPORTS = [
   // ── kekerasan / begal ──────────────────────────────────────────────
   { id: 'r001', category: 'kekerasan', subcategory: 'begal', description: 'Begal motor di jalan sepi dekat Sudirman, pelaku dua orang berboncengan.', location: { type: 'Point', coordinates: [106.8230, -6.2088] }, address: 'Jl. Jend. Sudirman, Setiabudi, Jakarta Selatan', createdAt: hoursAgo(2) },
@@ -106,11 +107,27 @@ const MOCK_REPORTS = [
   { id: 'r063', category: 'pencurian', subcategory: 'maling_kendaraan', description: 'Motor PCX hilang dari halaman rumah di Duren Sawit pagi hari.', location: { type: 'Point', coordinates: [106.9110, -6.2280] }, address: 'Duren Sawit, Jakarta Timur', createdAt: daysAgo(3) },
   { id: 'r064', category: 'kekerasan', subcategory: 'begal', description: 'Begal di Jl. Casablanca menjelang subuh, korban pengemudi ojol.', location: { type: 'Point', coordinates: [106.8410, -6.2290] }, address: 'Jl. Casablanca, Tebet, Jakarta Selatan', createdAt: hoursAgo(16) },
   { id: 'r065', category: 'pencurian', subcategory: 'jambret', description: 'Jambret anting emas di Pasar Baru, korban wanita paruh baya.', location: { type: 'Point', coordinates: [106.8390, -6.1650] }, address: 'Pasar Baru, Sawah Besar, Jakarta Pusat', createdAt: daysAgo(4) },
+
+  // ── MOCK DATA LUAR JAKARTA (SKALABILITAS REGIONAL) ──────────────────
+  // Kluster: Bali & Lombok (NTB)
+  { id: 'r_bali_01', category: 'pencurian', subcategory: 'jambret', description: 'Penjambretan tas turis asing di trotoar Seminyak, pelaku menggunakan motor sport.', location: { type: 'Point', coordinates: [115.1580, -8.6900] }, address: 'Trotoar Seminyak, Kuta, Badung, Bali', createdAt: hoursAgo(4) },
+  { id: 'r_bali_02', category: 'pencurian', subcategory: 'copet', description: 'Pencopetan handphone di area ramai Kuta Beach Walk.', location: { type: 'Point', coordinates: [115.1680, -8.7200] }, address: 'Kuta, Badung, Bali', createdAt: daysAgo(1) },
+  { id: 'r_lombok_01', category: 'kekerasan', subcategory: 'begal', description: 'Percobaan begal motor di jalur sepi Senggigi malam hari, pelaku kabur ke arah perbukitan.', location: { type: 'Point', coordinates: [116.0400, -8.3900] }, address: 'Jl. Raya Senggigi, Batu Layar, Lombok Barat, NTB', createdAt: daysAgo(2) },
+  
+  // Kluster: DIY & Jawa Tengah
+  { id: 'r_diy_01', category: 'kekerasan', subcategory: 'penganiayaan', description: 'Aksi klithih remaja bermotor di jalan lingkar Sleman dini hari, korban mengalami luka gores.', location: { type: 'Point', coordinates: [110.3700, -7.7500] }, address: 'Ringroad Utara, Sleman, DI Yogyakarta', createdAt: hoursAgo(10) },
+  { id: 'r_diy_02', category: 'pencurian', subcategory: 'maling_kendaraan', description: 'Motor matic hilang di parkiran kos kawasan Seturan.', location: { type: 'Point', coordinates: [110.4090, -7.7700] }, address: 'Seturan, Depok, Sleman, DI Yogyakarta', createdAt: daysAgo(1) },
+  { id: 'r_jateng_01', category: 'tawuran', subcategory: 'tawuran', description: 'Tawuran pelajar SMK di jalan raya Semarang-Solo, beberapa senjata tajam diamankan warga.', location: { type: 'Point', coordinates: [110.4200, -7.0200] }, address: 'Jl. Perintis Kemerdekaan, Banyumanik, Semarang, Jawa Tengah', createdAt: daysAgo(3) },
+
+  // Kluster: Jawa Timur
+  { id: 'r_jatim_01', category: 'pencurian', subcategory: 'maling_kendaraan', description: 'Maling motor terekam CCTV di parkiran ruko Dharmahusada Surabaya.', location: { type: 'Point', coordinates: [112.7750, -7.2680] }, address: 'Ruko Dharmahusada, Gubeng, Surabaya, Jawa Timur', createdAt: hoursAgo(15) },
+  { id: 'r_jatim_02', category: 'penipuan', subcategory: 'penipuan', description: 'Penipuan jual beli tiket wisata fiktif secara online di kawasan Malang.', location: { type: 'Point', coordinates: [112.6300, -7.9800] }, address: 'Klojen, Kota Malang, Jawa Timur', createdAt: daysAgo(2) }
 ]
 
 // Singleton Shared State (outside hook definition)
 const reports = ref([])
 const loading = ref(false)
+const currentRegion = ref('jabodetabekjur') // Default regional: JABODETABEKJUR (Jakarta)
 
 const activeFilters = ref({
   kekerasan: true,
@@ -126,9 +143,20 @@ export function useReports() {
     return Object.values(activeFilters.value).some((v) => !v)
   })
 
-  /** Filter reports dynamically based on checked categories */
+  /** Filter reports dynamically based on checked categories AND current regional boundaries */
   const filteredReports = computed(() => {
-    return reports.value.filter((r) => activeFilters.value[r.category])
+    return reports.value.filter((r) => {
+      // 1. Saring berdasarkan filter kategori aktif
+      if (!activeFilters.value[r.category]) return false
+      
+      // 2. Saring berdasarkan kluster regional spasial dinamis
+      const coords = r.location?.coordinates
+      if (!coords || coords.length < 2) return false
+      const [lng, lat] = coords
+      
+      const region = REGIONS[currentRegion.value]
+      return region ? region.contains(lat, lng) : true
+    })
   })
 
   /** Sorted by newest first, limit to 20 */
@@ -139,7 +167,6 @@ export function useReports() {
   )
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL
-  const AUTH_KEY = import.meta.env.VITE_API_AUTH_KEY || 'default_staysafe_dev_key'
   const IS_PROD = import.meta.env.PROD
 
   /**
@@ -150,11 +177,7 @@ export function useReports() {
     try {
       if (API_BASE) {
         // Ambil data langsung dari Firestore API
-        const response = await fetch(`${API_BASE}/reports?t=${Date.now()}`, {
-          headers: {
-            'Authorization': `Bearer ${AUTH_KEY}`
-          }
-        })
+        const response = await fetch(`${API_BASE}/reports?t=${Date.now()}`)
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
@@ -205,12 +228,12 @@ export function useReports() {
           description: data.description || '',
           latitude: data.location.coordinates[1],  // Bujur adalah koordinat 1 [lng, lat]
           longitude: data.location.coordinates[0], // Lintang adalah koordinat 0 [lng, lat]
+          turnstileToken: data.turnstileToken,     // Token Turnstile
         }
         const response = await fetch(`${API_BASE}/reports`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${AUTH_KEY}`,
           },
           body: JSON.stringify(payload),
         })
@@ -270,6 +293,7 @@ export function useReports() {
   return {
     reports,
     loading,
+    currentRegion,
     activeFilters,
     filteredReports,
     recentReports,

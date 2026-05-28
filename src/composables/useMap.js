@@ -16,6 +16,8 @@ import 'leaflet.heat'
 import 'leaflet.markercluster'
 
 import { CATEGORIES, getCategoryById, getSubcategoryLabel } from '@/config/categories.js'
+import { REGIONS, detectRegionFromCoords } from '../config/regions.js'
+import { useReports } from './useReports.js'
 
 // ---------------------------------------------------------------------------
 // Custom CSS Injections for UI Enhancements
@@ -226,9 +228,12 @@ export function useMap() {
   function initMap(containerId) {
     injectMapStyles()
 
+    const { currentRegion } = useReports()
+    const activeReg = REGIONS[currentRegion.value] || REGIONS.jabodetabekjur
+
     const instance = L.map(containerId, {
-      center: [-6.2088, 106.8456],
-      zoom: 12,
+      center: activeReg.center,
+      zoom: activeReg.zoom,
       zoomControl: false,
       attributionControl: false,
     })
@@ -506,6 +511,16 @@ export function useMap() {
             const { latitude, longitude } = position.coords
             userLocation.value = { lat: latitude, lng: longitude }
 
+            // Deteksi wilayah regional otomatis secara cerdas dari koordinat GPS riil!
+            const detectedReg = detectRegionFromCoords(latitude, longitude)
+            const { currentRegion } = useReports()
+            
+            // Ubah wilayah aktif jika terdeteksi berada di salah satu kluster khusus
+            if (detectedReg !== currentRegion.value) {
+              console.log(`[StaySafe Region] GPS mendeteksi pengguna berada di wilayah: ${detectedReg}`)
+              currentRegion.value = detectedReg
+            }
+
             // Clean up old marker
             if (userLocationMarker) {
               instance.removeLayer(userLocationMarker)
@@ -658,6 +673,29 @@ export function useMap() {
     }
   }
 
+  function changeRegion(regionId) {
+    const instance = map.value
+    if (!instance) return
+
+    const { currentRegion, filteredReports } = useReports()
+    const targetReg = REGIONS[regionId]
+    if (!targetReg) return
+
+    // 1. Ubah state region aktif
+    currentRegion.value = regionId
+
+    // 2. Terbangkan peta ke pusat region baru
+    instance.flyTo(targetReg.center, targetReg.zoom, {
+      duration: 1.8,
+      easeLinearity: 0.22,
+    })
+
+    // 3. Gambar ulang layer setelah transisi kamera Leaflet dimulai
+    setTimeout(() => {
+      updateLayers(filteredReports.value)
+    }, 300)
+  }
+
   return {
     map,
     currentZoom,
@@ -675,5 +713,6 @@ export function useMap() {
     showReportDetail,
     zoomIn,
     zoomOut,
+    changeRegion,
   }
 }
