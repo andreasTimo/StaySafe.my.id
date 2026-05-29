@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, onBeforeUnmount } from 'vue'
 import { CATEGORIES, getCategoryById, getSubcategoryLabel } from '../config/categories.js'
 import { useReports } from '../composables/useReports.js'
 import { useMap } from '../composables/useMap.js'
@@ -11,7 +11,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['close', 'select-report'])
+const emit = defineEmits(['close', 'select-report', 'start-tour', 'open-policy'])
 
 // Destructure filteredReports and recentReports to prevent undefined crash on Laporan Terbaru tab
 const { activeFilters, toggleFilter, filteredReports, recentReports } = useReports()
@@ -20,7 +20,7 @@ const { visualMode, setVisualMode } = useMap()
 const activeTab = ref('filter') // 'filter', 'recent', 'support', 'feedback'
 
 // Feedback & Saran States
-const feedbackType = ref('') // '', 'saran', 'bug', 'kritik', 'lainnya'
+const feedbackType = ref('') // '', 'saran', 'bug', 'apresiasi', 'lainnya'
 const feedbackEmail = ref('')
 const feedbackMessage = ref('')
 const feedbackSending = ref(false)
@@ -31,11 +31,37 @@ const feedbackTurnstileToken = ref('')
 const feedbackTurnstileWidgetId = ref(null)
 const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY || '1x00000000000000000000AA' // Fallback testing key
 
+function resetFeedbackTurnstile() {
+  feedbackTurnstileToken.value = ''
+  if (window.turnstile && feedbackTurnstileWidgetId.value !== null) {
+    try {
+      window.turnstile.reset(feedbackTurnstileWidgetId.value)
+    } catch (e) {
+      feedbackTurnstileWidgetId.value = null
+    }
+  }
+}
+
+function removeFeedbackTurnstile() {
+  feedbackTurnstileToken.value = ''
+  if (window.turnstile && feedbackTurnstileWidgetId.value !== null) {
+    try {
+      if (typeof window.turnstile.remove === 'function') {
+        window.turnstile.remove(feedbackTurnstileWidgetId.value)
+      } else {
+        window.turnstile.reset(feedbackTurnstileWidgetId.value)
+      }
+    } catch (e) {}
+  }
+  feedbackTurnstileWidgetId.value = null
+}
+
 function renderFeedbackTurnstile() {
   if (window.turnstile && document.getElementById('feedback-turnstile-container')) {
     try {
       if (feedbackTurnstileWidgetId.value !== null) {
         window.turnstile.reset(feedbackTurnstileWidgetId.value)
+        return
       }
       
       feedbackTurnstileWidgetId.value = window.turnstile.render('#feedback-turnstile-container', {
@@ -64,12 +90,7 @@ watch(feedbackType, async (newType) => {
     await nextTick()
     setTimeout(renderFeedbackTurnstile, 50)
   } else {
-    feedbackTurnstileToken.value = ''
-    if (window.turnstile && feedbackTurnstileWidgetId.value !== null) {
-      try {
-        window.turnstile.reset(feedbackTurnstileWidgetId.value)
-      } catch (e) {}
-    }
+    removeFeedbackTurnstile()
   }
 })
 
@@ -77,12 +98,7 @@ watch(feedbackType, async (newType) => {
 watch(activeTab, (newTab) => {
   if (newTab !== 'feedback') {
     feedbackType.value = ''
-    feedbackTurnstileToken.value = ''
-    if (window.turnstile && feedbackTurnstileWidgetId.value !== null) {
-      try {
-        window.turnstile.reset(feedbackTurnstileWidgetId.value)
-      } catch (e) {}
-    }
+    removeFeedbackTurnstile()
   }
 })
 
@@ -90,12 +106,7 @@ watch(activeTab, (newTab) => {
 watch(() => props.isOpen, (open) => {
   if (!open) {
     feedbackType.value = ''
-    feedbackTurnstileToken.value = ''
-    if (window.turnstile && feedbackTurnstileWidgetId.value !== null) {
-      try {
-        window.turnstile.reset(feedbackTurnstileWidgetId.value)
-      } catch (e) {}
-    }
+    removeFeedbackTurnstile()
   }
 })
 
@@ -149,21 +160,11 @@ async function submitFeedback() {
     feedbackEmail.value = ''
     feedbackMessage.value = ''
     feedbackType.value = ''
-    feedbackTurnstileToken.value = ''
-    if (window.turnstile && feedbackTurnstileWidgetId.value !== null) {
-      try {
-        window.turnstile.reset(feedbackTurnstileWidgetId.value)
-      } catch (e) {}
-    }
+    removeFeedbackTurnstile()
   } catch (err) {
     console.error('[Feedback] Gagal mengirim:', err)
     feedbackError.value = err.message || 'Gagal mengirim saran. Coba beberapa saat lagi.'
-    feedbackTurnstileToken.value = ''
-    if (window.turnstile && feedbackTurnstileWidgetId.value !== null) {
-      try {
-        window.turnstile.reset(feedbackTurnstileWidgetId.value)
-      } catch (e) {}
-    }
+    resetFeedbackTurnstile()
   } finally {
     feedbackSending.value = false
   }
@@ -173,13 +174,10 @@ function resetFeedbackForm() {
   feedbackSuccess.value = false
   feedbackError.value = ''
   feedbackType.value = ''
-  feedbackTurnstileToken.value = ''
-  if (window.turnstile && feedbackTurnstileWidgetId.value !== null) {
-    try {
-      window.turnstile.reset(feedbackTurnstileWidgetId.value)
-    } catch (e) {}
-  }
+  removeFeedbackTurnstile()
 }
+
+onBeforeUnmount(removeFeedbackTurnstile)
 
 function getCategoryMeta(categoryId) {
   return getCategoryById(categoryId) || Object.values(CATEGORIES)[0]
@@ -223,6 +221,7 @@ function handleSelect(report) {
   </Transition>
 
   <div
+    id="report-panel"
     class="fixed top-0 left-0 bottom-0 w-[360px] max-w-[calc(100vw-16px)] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
     :class="[isOpen ? 'translate-x-0' : '-translate-x-full', 'z-[1200] lg:z-[1050]']"
     @click.stop
@@ -264,7 +263,7 @@ function handleSelect(report) {
       </div>
 
       <!-- Custom Styled Tab Switcher (Legenda, Laporan, Dukung, Saran) -->
-      <div class="flex px-2 pt-3 pb-1 border-b border-white/5 flex-shrink-0 gap-1 bg-white/[0.01]">
+      <div id="sidebar-tabs" class="flex px-2 pt-3 pb-1 border-b border-white/5 flex-shrink-0 gap-1 bg-white/[0.01]">
         <!-- TAB 1: LEGENDA -->
         <button
           @click="activeTab = 'filter'"
@@ -402,9 +401,20 @@ function handleSelect(report) {
                 Titik Lokasi
               </button>
             </div>
-            <p class="text-[10px] text-white/30 mt-2.5 leading-relaxed pl-1">
+            <p class="text-[10px] text-white/30 mt-2.5 leading-relaxed pl-1 mb-4">
               * Mode <strong>Otomatis</strong> akan menyesuaikan tampilan heatmap atau marker secara dinamis saat Anda memperbesar/memperkecil peta.
             </p>
+          </div>
+
+          <!-- Panduan Pengguna (Onboarding Tour Trigger) -->
+          <div class="border-t border-white/5 pt-4">
+            <h3 class="text-xs font-bold text-white/40 uppercase tracking-widest mb-3">Panduan Pengguna:</h3>
+            <button
+              @click="emit('start-tour')"
+              class="w-full py-2.5 px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/15 text-xs text-white/90 font-bold transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer select-none"
+            >
+              <span>🧭</span> Mulai Tur Panduan
+            </button>
           </div>
 
         </div>
@@ -560,7 +570,7 @@ function handleSelect(report) {
                     v-for="t in [
                       { id: 'saran', label: '💡 Saran Fitur' },
                       { id: 'bug', label: '🪲 Laporan Bug' },
-                      { id: 'kritik', label: '💬 Apresiasi' },
+                      { id: 'apresiasi', label: '💬 Apresiasi' },
                       { id: 'lainnya', label: '❓ Lainnya' }
                     ]"
                     :key="t.id"
@@ -627,7 +637,26 @@ function handleSelect(report) {
             </form>
           </div>
         </div>
+      </div>
 
+      <!-- Persistent Sidebar Footer for Privacy & Terms (Google Maps Responsive Style) -->
+      <div class="px-5 py-4 border-t border-white/[0.06] flex items-center justify-between text-[10px] text-white/30 flex-shrink-0 bg-slate-950/40 select-none">
+        <span class="font-medium">© 2026 StaySafe.my.id</span>
+        <div class="flex gap-2.5 items-center">
+          <button
+            @click="emit('open-policy', 'privacy')"
+            class="hover:text-emerald-400 active:scale-95 transition-all duration-150 cursor-pointer font-bold uppercase tracking-wider"
+          >
+            Privasi
+          </button>
+          <span>•</span>
+          <button
+            @click="emit('open-policy', 'terms')"
+            class="hover:text-emerald-400 active:scale-95 transition-all duration-150 cursor-pointer font-bold uppercase tracking-wider"
+          >
+            Ketentuan
+          </button>
+        </div>
       </div>
 
     </div>

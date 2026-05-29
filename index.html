@@ -3,15 +3,73 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="description" content="Aplikasi pemetaan kerawanan sosial dan insiden keamanan berbasis waktu nyata di Jakarta" />
+    <title>StaySafe.my.id — Peta Keamanan & Titik Rawan Indonesia</title>
+    
+    <!-- Meta Tags Fundamental -->
+    <meta name="description" content="Aplikasi pemetaan kerawanan sosial dan insiden keamanan waktu nyata di Indonesia. Pantau dan laporkan titik rawan begal, copet, jambret, tawuran, pelecehan, dan penipuan di sekitar Anda." />
+    <meta name="keywords" content="peta begal indonesia, peta kriminal indonesia, titik rawan kejahatan, staysafe indonesia, peta kerawanan jakarta, peta begal bandung, peta begal surabaya, jambret, copet, tawuran, penipuan, laporan kriminalitas" />
+    <meta name="author" content="StaySafe Indonesia" />
+    <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#111827" />
+    <link rel="canonical" href="https://staysafe.my.id" />
+    
+    <!-- Apple Mobile Web App -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="StaySafe.my.id — Peta Keamanan & Titik Rawan Indonesia" />
+    <meta property="og:description" content="Aplikasi pemetaan kerawanan sosial dan insiden keamanan waktu nyata di Indonesia. Pantau dan laporkan titik rawan begal, copet, jambret, tawuran, pelecehan, dan penipuan di sekitar Anda secara langsung." />
+    <meta property="og:url" content="https://staysafe.my.id" />
+    <meta property="og:image" content="https://staysafe.my.id/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:site_name" content="StaySafe Indonesia" />
+    <meta property="og:locale" content="id_ID" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="StaySafe.my.id — Peta Keamanan & Titik Rawan Indonesia" />
+    <meta name="twitter:description" content="Aplikasi pemetaan kerawanan sosial dan insiden keamanan waktu nyata di Indonesia. Pantau dan laporkan titik rawan begal, copet, jambret, tawuran, pelecehan, dan penipuan secara langsung." />
+    <meta name="twitter:image" content="https://staysafe.my.id/og-image.png" />
+    
+    <!-- JSON-LD Structured Data (Schema.org) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "StaySafe.my.id",
+      "url": "https://staysafe.my.id",
+      "description": "Aplikasi pemetaan kerawanan sosial dan insiden keamanan berbasis waktu nyata di Indonesia (Begal, Copet, Jambret, Tawuran, Pelecehan, Penipuan).",
+      "applicationCategory": "SafetyApplication",
+      "operatingSystem": "All",
+      "browserRequirements": "Requires JavaScript. Requires HTML5.",
+      "author": {
+        "@type": "Organization",
+        "name": "StaySafe Indonesia"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "IDR"
+      },
+      "spatialCoverage": {
+        "@type": "Place",
+        "name": "Indonesia",
+        "geo": {
+          "@type": "GeoShape",
+          "addressCountry": "ID"
+        }
+      }
+    }
+    </script>
+    
     <!-- FontAwesome v6 CDN for premium vector icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0%25' stop-color='%2334d399'/><stop offset='100%25' stop-color='%2310b981'/></linearGradient></defs><path d='M50 5 L90 25 L90 55 C90 78 68 95 50 95 C32 95 10 78 10 55 L10 25 Z' fill='url(%23g)'/><path d='M42 55 L48 61 L62 42' stroke='white' stroke-width='7' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>" />
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-    <title>StaySafe.my.id — Peta Keamanan Jakarta</title>
   </head>
   <body class="bg-gray-950">
     <div id="app"></div>

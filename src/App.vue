@@ -7,6 +7,8 @@ import MapLegend from './components/MapLegend.vue'
 import { useMap } from './composables/useMap'
 import { useReports } from './composables/useReports'
 import MapSearch from './components/MapSearch.vue'
+import PolicyModal from './components/PolicyModal.vue'
+import OnboardingTour from './components/OnboardingTour.vue'
 
 const { map, setReportMode, pendingLocation, updateLayers, recenterMap, locateUser, zoomIn, zoomOut } = useMap()
 const { filteredReports, fetchReports, submitReport } = useReports()
@@ -19,6 +21,32 @@ const formOpen = ref(false)
 const toastMessage = ref('')
 const toastVisible = ref(false)
 let toastTimer = null
+
+const policyOpen = ref(false)
+const policySection = ref('privacy')
+
+function handleOpenPolicy(section) {
+  policySection.value = section
+  policyOpen.value = true
+}
+
+const onboardingActive = ref(false)
+
+function handleStartTour() {
+  panelOpen.value = false // Tutup sidebar agar tampilan peta bebas hambatan
+  setTimeout(() => {
+    onboardingActive.value = true
+  }, 350)
+}
+
+function handleTourStepChange(stepIndex) {
+  // Langkah ke-2 adalah sidebar panel ('#report-panel')
+  if (stepIndex === 2) {
+    panelOpen.value = true
+  } else {
+    panelOpen.value = false
+  }
+}
 
 const totalCount = computed(() => filteredReports.value.length)
 
@@ -49,6 +77,12 @@ watch(pendingLocation, (loc) => {
 watch(formOpen, (open) => {
   if (!open) {
     setReportMode(false)
+  }
+})
+
+watch(onboardingActive, (active) => {
+  if (!active) {
+    panelOpen.value = false
   }
 })
 
@@ -90,6 +124,15 @@ onMounted(async () => {
     windowWidth.value = window.innerWidth
   })
 
+  // Cek apakah user pertama kali berkunjung untuk memicu panduan
+  const hasVisited = localStorage.getItem('staysafe_onboarded')
+  if (!hasVisited) {
+    // Jalankan tour secara otomatis dengan sedikit jeda agar peta Leaflet selesai dirender sempurna
+    setTimeout(() => {
+      onboardingActive.value = true
+    }, 1500)
+  }
+
   // Sinkronisasi data real-time: polling periodik setiap 10 detik
   pollingInterval = setInterval(async () => {
     try {
@@ -121,7 +164,7 @@ watch(map, (newMap) => {
     <MapView />
 
     <!-- Google Maps Style Search & Hamburger Navigation Box (PC & HP Unified) (Moved outside to break stacking context) -->
-    <div class="absolute top-4 left-4 z-[1100] w-[calc(100vw-32px)] md:w-[328px] pointer-events-auto">
+    <div id="map-search-container" class="absolute top-4 left-4 z-[1100] w-[calc(100vw-32px)] md:w-[328px] pointer-events-auto">
       <MapSearch :is-menu-open="panelOpen" @toggle-menu="panelOpen = !panelOpen" />
     </div>
 
@@ -131,6 +174,7 @@ watch(map, (newMap) => {
       <!-- Center-Bottom: Circular Red Pulsing "LAPOR" Button -->
       <div class="pointer-events-auto fixed bottom-[calc(3rem+env(safe-area-inset-bottom))] lg:bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5">
         <button
+          id="btn-lapor"
           @click="startReport"
           class="relative w-15 h-15 rounded-full bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-xl shadow-red-500/40 hover:shadow-red-500/60 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center group cursor-pointer"
           title="Lapor Kejahatan"
@@ -147,7 +191,7 @@ watch(map, (newMap) => {
       </div>
 
       <!-- Bottom-Right: Google Maps Style Controls Stack (Recenter + Zoom +/-) -->
-      <div class="pointer-events-auto fixed bottom-[calc(3rem+env(safe-area-inset-bottom))] lg:bottom-8 right-4 flex flex-col gap-2.5 items-center z-[1100]">
+      <div id="map-controls-container" class="pointer-events-auto fixed bottom-[calc(3rem+env(safe-area-inset-bottom))] lg:bottom-8 right-4 flex flex-col gap-2.5 items-center z-[1100]">
         
         <!-- Recenter Button (Premium Dark Glassmorphism) -->
         <button
@@ -188,6 +232,7 @@ watch(map, (newMap) => {
 
       <!-- Bottom-Left: Interactive Collapsible Map Legend (Dynamic Sliding Offset) -->
       <MapLegend
+        id="map-legend"
         :reports="filteredReports"
         class="fixed bottom-[calc(2.5rem+env(safe-area-inset-bottom))] lg:bottom-6 z-[1000] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
         :class="panelOpen ? 'left-4 md:left-[376px]' : 'left-4'"
@@ -199,6 +244,8 @@ watch(map, (newMap) => {
       :is-open="panelOpen"
       @close="panelOpen = false"
       @select-report="handleFlyTo"
+      @start-tour="handleStartTour"
+      @open-policy="handleOpenPolicy"
     />
 
     <!-- Incident Creation Form Modal -->
@@ -207,6 +254,15 @@ watch(map, (newMap) => {
       :location="pendingLocation"
       @submit="handleSubmit"
     />
+
+    <!-- Policy & Terms Popup Modal -->
+    <PolicyModal
+      v-model="policyOpen"
+      :section="policySection"
+    />
+
+    <!-- Onboarding Guide Tour Component Overlay -->
+    <OnboardingTour v-model="onboardingActive" @step-change="handleTourStepChange" />
 
     <!-- Global Toast Alert Box -->
     <Transition name="toast">

@@ -310,7 +310,15 @@ async function handlePostFeedback(req, res) {
 
     if (resendApiKey) {
       // Format email HTML premium yang sangat rapi dan berkelas
-      const subject = `[StaySafe ${type.toUpperCase()}] Masukan Baru`;
+      const feedbackTypeLabels = {
+        saran: 'Saran Fitur',
+        bug: 'Laporan Bug',
+        apresiasi: 'Apresiasi',
+        kritik: 'Apresiasi',
+        lainnya: 'Lainnya'
+      };
+      const displayType = feedbackTypeLabels[type] || type;
+      const subject = `[StaySafe ${displayType.toUpperCase()}] Masukan Baru`;
       const htmlContent = `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
           <div style="text-align: center; margin-bottom: 20px;">
@@ -323,7 +331,7 @@ async function handlePostFeedback(req, res) {
             <table style="width: 100%; border-collapse: collapse;">
               <tr style="border-bottom: 1px solid #f1f5f9;">
                 <td style="padding: 10px 0; color: #64748b; font-size: 12px; font-weight: bold; width: 130px; text-transform: uppercase; letter-spacing: 0.05em;">Tipe Masukan</td>
-                <td style="padding: 10px 0; color: #10b981; font-size: 13px; font-weight: 800; text-transform: uppercase;">${type}</td>
+                <td style="padding: 10px 0; color: #10b981; font-size: 13px; font-weight: 800; text-transform: uppercase;">${displayType}</td>
               </tr>
               <tr style="border-bottom: 1px solid #f1f5f9;">
                 <td style="padding: 10px 0; color: #64748b; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em;">Email Pengirim</td>
