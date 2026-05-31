@@ -14,7 +14,7 @@ export const CATEGORIES = {
       DEFAULT: '#EF4444',
       dark: '#991B1B',
     },
-    icon: '🔴',
+    icon: 'fa-solid fa-hand-fist',
     subcategories: [
       { id: 'begal', label: 'Begal' },
       { id: 'penodongan', label: 'Penodongan' },
@@ -31,7 +31,7 @@ export const CATEGORIES = {
       DEFAULT: '#F97316',
       dark: '#9A3412',
     },
-    icon: '🟠',
+    icon: 'fa-solid fa-user-secret',
     subcategories: [
       { id: 'jambret', label: 'Jambret' },
       { id: 'copet', label: 'Copet' },
@@ -48,7 +48,7 @@ export const CATEGORIES = {
       DEFAULT: '#A855F7',
       dark: '#581C87',
     },
-    icon: '🟣',
+    icon: 'fa-solid fa-comments-dollar',
     subcategories: [
       { id: 'penipuan', label: 'Penipuan' },
     ],
@@ -62,7 +62,7 @@ export const CATEGORIES = {
       DEFAULT: '#3B82F6',
       dark: '#1E3A5F',
     },
-    icon: '🔵',
+    icon: 'fa-solid fa-spray-can',
     subcategories: [
       { id: 'vandalisme', label: 'Vandalisme' },
     ],
@@ -76,7 +76,7 @@ export const CATEGORIES = {
       DEFAULT: '#22C55E',
       dark: '#14532D',
     },
-    icon: '🟢',
+    icon: 'fa-solid fa-people-group',
     subcategories: [
       { id: 'tawuran', label: 'Tawuran' },
     ],

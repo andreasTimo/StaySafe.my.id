@@ -250,19 +250,23 @@ function selectSubcategory(subId) {
             <label class="block text-xs font-medium text-white/50 mb-2 uppercase tracking-wider">
               Kategori
             </label>
-            <div class="relative">
+            <div class="relative flex items-center">
+              <div v-if="currentCategory" class="absolute left-4 flex items-center pointer-events-none">
+                <i :class="[currentCategory.icon, 'text-sm']" :style="{ color: categoryColor }"></i>
+              </div>
               <select
                 v-model="selectedCategory"
-                class="w-full bg-white/[0.04] border border-white/[0.06] rounded-xl px-4 py-3.5 text-sm text-white/80 focus:text-white focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/10 transition-all duration-200 cursor-pointer appearance-none"
+                class="w-full bg-white/[0.04] border border-white/[0.06] rounded-xl py-3.5 text-sm text-white/80 focus:text-white focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/10 transition-all duration-200 cursor-pointer appearance-none"
+                :class="currentCategory ? 'pl-11 pr-10' : 'px-4 pr-10'"
               >
                 <option value="" disabled selected class="bg-slate-900 text-white/30">Pilih Kategori...</option>
                 <option
                   v-for="cat in categoryList"
                   :key="cat.id"
                   :value="cat.id"
-                  class="bg-slate-900 text-white"
+                  class="bg-slate-900 text-white font-semibold"
                 >
-                  {{ cat.icon }} &nbsp; {{ cat.label }}
+                  {{ cat.label }}
                 </option>
               </select>
               <!-- Custom dropdown chevron arrow icon -->

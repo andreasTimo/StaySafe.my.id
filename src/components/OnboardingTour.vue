@@ -18,41 +18,41 @@ const windowHeight = ref(window.innerHeight)
 // Steps Configuration
 const steps = [
   {
-    title: 'Selamat Datang di StaySafe! 👋',
+    title: 'Selamat Datang di StaySafe! <i class="fa-solid fa-shield-halved text-emerald-400 ml-1"></i>',
     desc: 'StaySafe.my.id adalah platform pemantauan keamanan jalan raya secara real-time. Mari ikuti tur panduan singkat ini selama 1 menit untuk mempelajari cara memantau & melaporkan titik kerawanan di sekitar Anda.',
     target: null
   },
   {
-    title: '🌐 Cari & Filter Wilayah',
+    title: '<i class="fa-solid fa-magnifying-glass-location text-emerald-400 mr-1.5"></i> Cari & Filter Wilayah',
     desc: 'Gunakan kotak pencarian ini untuk mencari nama jalan, tempat, atau jenis kriminalitas secara instan. Anda juga dapat beralih kluster regional (seperti Bandung, Surabaya, dll.) lewat tombol selector regional hijau di pojok kiri.',
     target: '#map-search-container'
   },
   {
-    title: '📋 4 Fitur Utama Sidebar',
+    title: '<i class="fa-solid fa-list-check text-emerald-400 mr-1.5"></i> 4 Fitur Utama Sidebar',
     desc: 'Di menu sidebar ini terdapat 4 tab fitur penting yang dapat Anda akses:\n\n' +
-          '1. 🗺️ Legenda: Memantau sebaran kerawanan & menyaring visualisasi peta (titik vs heatmap).\n' +
-          '2. 📑 Laporan: Meninjau log laporan kejahatan jalanan terbaru yang dikirim oleh warga.\n' +
-          '3. 💖 Dukung: Membantu kelangsungan biaya sewa server & database secara sukarela.\n' +
-          '4. 💡 Saran: Tempat mengirim ide fitur baru atau laporan bug langsung ke pengembang.',
+          '1. <i class="fa-solid fa-map text-emerald-400 mr-1 text-[11px]"></i> <strong>Legenda:</strong> Memantau sebaran kerawanan & menyaring visualisasi peta (titik vs heatmap).\n' +
+          '2. <i class="fa-solid fa-clock-rotate-left text-emerald-400 mr-1 text-[11px]"></i> <strong>Laporan:</strong> Meninjau log laporan kejahatan jalanan terbaru yang dikirim oleh warga.\n' +
+          '3. <i class="fa-solid fa-heart text-rose-500 mr-1 text-[11px]"></i> <strong>Dukung:</strong> Membantu kelangsungan biaya sewa server & database secara sukarela.\n' +
+          '4. <i class="fa-solid fa-lightbulb text-yellow-400 mr-1 text-[11px]"></i> <strong>Saran:</strong> Tempat mengirim ide fitur baru atau laporan bug langsung ke pengembang.',
     target: '#sidebar-tabs'
   },
   {
-    title: '📍 Laporkan Kejadian',
+    title: '<i class="fa-solid fa-location-dot text-rose-500 mr-1.5 animate-pulse"></i> Laporkan Kejadian',
     desc: 'Melihat atau menjadi korban kejahatan jalanan? Laporkan secara anonim demi menjaga keselamatan warga lain! Cukup klik tombol merah besar ini, lalu ketuk lokasi kejadian di peta untuk meletakkan pin & mengisi formulir laporan.',
     target: '#btn-lapor'
   },
   {
-    title: '🧭 Navigasi & GPS Lokasi',
+    title: '<i class="fa-solid fa-location-crosshairs text-emerald-400 mr-1.5"></i> Navigasi & GPS Lokasi',
     desc: 'Gunakan tombol GPS crosshair ini untuk mensejajarkan dan memusatkan peta kembali ke posisi Anda saat ini. Di bawahnya terdapat tombol zoom (+ / -) untuk memperbesar atau memperkecil visualisasi daerah rawan.',
     target: '#map-controls-container'
   },
   {
-    title: '📊 Legenda Kerawanan Peta',
+    title: '<i class="fa-solid fa-layer-group text-emerald-400 mr-1.5"></i> Legenda Kerawanan Peta',
     desc: 'Tingkat kerawanan jalan dihitung otomatis berdasarkan intensitas kejahatan terbaru di daerah tersebut. Di sini Anda dapat memantau kode warna tingkat kerawanan dan menyembunyikannya agar pandangan peta lebih luas.',
     target: '#map-legend'
   },
   {
-    title: '🎉 Anda Siap Menjelajah!',
+    title: '<i class="fa-solid fa-wand-magic-sparkles text-emerald-400 mr-1.5 animate-bounce"></i> Anda Siap Menjelajah!',
     desc: 'Luar biasa, Anda telah menguasai seluruh fitur utama! Selalu pantau kondisi jalan raya sebelum bepergian, tetap waspada, dan mari bersama-sama berkontribusi menciptakan lingkungan jalan raya yang lebih aman.',
     target: null
   }
@@ -339,8 +339,7 @@ const activeStep = computed(() => steps[currentStep.value])
       >
         <!-- Header: Title and Skip -->
         <div class="flex items-start justify-between gap-3">
-          <h2 class="text-white font-extrabold text-sm md:text-base leading-tight tracking-wide">
-            {{ activeStep.title }}
+          <h2 class="text-white font-extrabold text-sm md:text-base leading-tight tracking-wide flex items-center" v-html="activeStep.title">
           </h2>
           <button
             @click="skipTour"
@@ -352,8 +351,7 @@ const activeStep = computed(() => steps[currentStep.value])
         </div>
 
         <!-- Body: Description -->
-        <p class="text-xs text-white/60 leading-relaxed font-medium">
-          {{ activeStep.desc }}
+        <p class="text-xs text-white/60 leading-relaxed font-medium" v-html="activeStep.desc.replace(/\n/g, '<br>')">
         </p>
 
         <!-- Footer: Progress Indicators and Navigation Actions -->

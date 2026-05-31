@@ -339,10 +339,10 @@ function handleSelect(report) {
                 <!-- Category Title with Dot and Emoji -->
                 <div class="flex items-center gap-2.5">
                   <div
-                    class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                    class="w-1.5 h-1.5 rounded-full flex-shrink-0"
                     :style="{ background: cat.color.DEFAULT }"
                   ></div>
-                  <span class="text-sm leading-none">{{ cat.icon }}</span>
+                  <i :class="[cat.icon, 'text-[11px]']" :style="{ color: cat.color.DEFAULT }"></i>
                   <h4 class="text-xs font-bold text-white/95 leading-tight tracking-wide">
                     {{ cat.label }}
                   </h4>
@@ -413,7 +413,7 @@ function handleSelect(report) {
               @click="emit('start-tour')"
               class="w-full py-2.5 px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/15 text-xs text-white/90 font-bold transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer select-none"
             >
-              <span>🧭</span> Mulai Tur Panduan
+              <i class="fa-solid fa-compass text-emerald-400"></i> Mulai Tur Panduan
             </button>
           </div>
 
@@ -437,8 +437,8 @@ function handleSelect(report) {
 
               <div class="pl-2">
                 <!-- Subcategory & Emoji icon -->
-                <div class="flex items-center gap-1.5 mb-1">
-                  <span class="text-xs leading-none">{{ getCategoryMeta(report.category).icon }}</span>
+                <div class="flex items-center gap-2 mb-1">
+                  <i :class="[getCategoryMeta(report.category).icon, 'text-[11px]']" :style="{ color: getCategoryMeta(report.category).color.DEFAULT }"></i>
                   <h3 class="text-[13px] font-bold text-white/90 group-hover:text-white leading-tight">
                     {{ getSubLabel(report.category, report.subcategory) }}
                   </h3>
@@ -460,8 +460,8 @@ function handleSelect(report) {
                 </div>
 
                 <!-- Full Address (Mencolok, White, Bold) on a separate row -->
-                <div v-if="report.address || report.location" class="flex items-start gap-1 text-[11px] text-white font-bold leading-normal mt-1 border-t border-white/5 pt-1.5">
-                  <span class="text-white/70">📍</span>
+                <div v-if="report.address || report.location" class="flex items-start gap-1.5 text-[11px] text-white font-bold leading-normal mt-1 border-t border-white/5 pt-1.5">
+                  <i class="fa-solid fa-location-dot text-emerald-400 text-[10px] mt-0.5"></i>
                   <span class="text-white tracking-wide">{{ report.address || `${report.location.coordinates[1].toFixed(4)}, ${report.location.coordinates[0].toFixed(4)}` }}</span>
                 </div>
               </div>
@@ -568,20 +568,21 @@ function handleSelect(report) {
                 <div class="grid grid-cols-2 gap-2">
                   <button
                     v-for="t in [
-                      { id: 'saran', label: '💡 Saran Fitur' },
-                      { id: 'bug', label: '🪲 Laporan Bug' },
-                      { id: 'apresiasi', label: '💬 Apresiasi' },
-                      { id: 'lainnya', label: '❓ Lainnya' }
+                      { id: 'saran', label: 'Saran Fitur', icon: 'fa-solid fa-lightbulb text-yellow-400' },
+                      { id: 'bug', label: 'Laporan Bug', icon: 'fa-solid fa-bug text-rose-500' },
+                      { id: 'apresiasi', label: 'Apresiasi', icon: 'fa-solid fa-thumbs-up text-sky-400' },
+                      { id: 'lainnya', label: 'Lainnya', icon: 'fa-solid fa-circle-question text-slate-400' }
                     ]"
                     :key="t.id"
                     type="button"
                     @click="feedbackType = t.id"
-                    class="h-8.5 rounded-xl border text-[10px] font-bold transition-all duration-150 flex items-center justify-center cursor-pointer select-none"
+                    class="h-8.5 rounded-xl border text-[10px] font-bold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer select-none"
                     :class="feedbackType === t.id
                       ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-extrabold shadow-sm'
                       : 'bg-white/[0.01] border-white/5 text-white/50 hover:text-white/80 hover:bg-white/5'"
                   >
-                    {{ t.label }}
+                    <i :class="t.icon"></i>
+                    <span>{{ t.label }}</span>
                   </button>
                 </div>
               </div>
@@ -632,7 +633,7 @@ function handleSelect(report) {
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span v-else>💡 Kirim Masukan</span>
+                <span v-else><i class="fa-solid fa-paper-plane mr-1"></i> Kirim Masukan</span>
               </button>
             </form>
           </div>

@@ -131,7 +131,7 @@ function searchIncidentSuggestions(query) {
         type: 'incident',
         short_name: getSubcategoryLabel(r.category, r.subcategory),
         display_name: r.description,
-        icon: cat ? cat.icon : '⚠️',
+        icon: cat ? cat.icon : 'fa-solid fa-triangle-exclamation',
         color: cat ? cat.color.DEFAULT : '#EF4444',
         rawReport: r
       }
@@ -290,21 +290,21 @@ function handleEnterKey() {
       <div class="flex border-t border-white/5 bg-white/[0.01] h-8.5 p-1 gap-1 flex-shrink-0">
         <button
           @click="searchMode = 'place'"
-          class="flex-1 rounded-lg text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer flex items-center justify-center gap-1"
+          class="flex-1 rounded-lg text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5"
           :class="searchMode === 'place'
             ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/15 shadow-sm'
             : 'text-white/40 hover:text-white/75'"
         >
-          <span>🌐</span> Cari Tempat
+          <i class="fa-solid fa-earth-asia text-[11px]"></i> Cari Tempat
         </button>
         <button
           @click="searchMode = 'incident'"
-          class="flex-1 rounded-lg text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer flex items-center justify-center gap-1"
+          class="flex-1 rounded-lg text-[10px] font-bold tracking-wide transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5"
           :class="searchMode === 'incident'
             ? 'bg-rose-500/10 text-rose-400 border border-rose-500/15 shadow-sm'
             : 'text-white/40 hover:text-white/75'"
         >
-          <span>⚠️</span> Cari Kejadian
+          <i class="fa-solid fa-triangle-exclamation text-[11px]"></i> Cari Kejadian
         </button>
       </div>
     </div>
@@ -324,7 +324,7 @@ function handleEnterKey() {
           >
             <!-- Mode 1: Cari Tempat Suggestions -->
             <div v-if="item.type === 'place'" class="flex items-start gap-3">
-              <span class="text-[13px] mt-0.5 group-hover:scale-110 transition-transform">📍</span>
+              <i class="fa-solid fa-location-dot text-emerald-400 text-sm mt-1 group-hover:scale-110 transition-transform"></i>
               <div class="flex-1 min-w-0">
                 <p class="text-xs font-bold text-white/90 truncate">{{ item.short_name }}</p>
                 <p class="text-[10px] text-white/35 truncate mt-0.5">{{ item.display_name }}</p>
@@ -334,10 +334,10 @@ function handleEnterKey() {
             <!-- Mode 2: Cari Kejadian Suggestions (Premium visual style) -->
             <div v-else class="flex items-start gap-3">
               <span
-                class="w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-bold text-white shadow-inner flex-shrink-0 group-hover:scale-105 transition-transform"
+                class="w-5 h-5 rounded-lg flex items-center justify-center text-[9px] font-bold text-white shadow-inner flex-shrink-0 group-hover:scale-105 transition-transform"
                 :style="{ background: item.color + '20', border: '1px solid ' + item.color + '30', color: item.color }"
               >
-                {{ item.icon }}
+                <i :class="item.icon"></i>
               </span>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between gap-2">
@@ -347,8 +347,8 @@ function handleEnterKey() {
                 </div>
                 <p class="text-[10.5px] text-white/40 truncate mt-0.5 leading-relaxed">{{ item.display_name }}</p>
                 <!-- Full Address displayed in bold white under the description -->
-                <p class="text-[9.5px] text-white font-bold mt-1 flex items-center gap-0.5">
-                  <span class="text-white/60">📍</span> {{ item.rawReport.address || 'Jakarta' }}
+                <p class="text-[9.5px] text-white font-bold mt-1 flex items-center gap-1">
+                  <i class="fa-solid fa-location-dot text-white/60 text-[10px]"></i> {{ item.rawReport.address || 'Jakarta' }}
                 </p>
               </div>
             </div>
@@ -357,9 +357,9 @@ function handleEnterKey() {
         <!-- Fallback when no results found -->
         <li
           v-else
-          class="px-5 py-6 text-center text-white/40 text-xs font-semibold select-none flex flex-col items-center justify-center gap-2"
+          class="px-5 py-6 text-center text-white/40 text-xs font-semibold select-none flex flex-col items-center justify-center gap-2.5"
         >
-          <div class="text-xl animate-bounce">🔍</div>
+          <div class="text-slate-500 animate-pulse"><i class="fa-solid fa-magnifying-glass text-2xl"></i></div>
           <div>
             <span v-if="searchMode === 'place'">Tidak ditemukan wilayah/jalan di Jabodetabek</span>
             <span v-else>Tidak ditemukan laporan "{{ searchQuery }}"</span>

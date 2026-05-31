@@ -55,10 +55,14 @@ function handleBackdropClick(e) {
         <div class="flex items-center justify-between px-6 py-5 border-b border-white/[0.06] flex-shrink-0">
           <div>
             <h2 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
-              <span v-if="section === 'privacy'">🛡️ Kebijakan Privasi</span>
-              <span v-else>📜 Syarat & Ketentuan</span>
+              <span v-if="section === 'privacy'" class="flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-emerald-400"></i> Kebijakan Privasi
+              </span>
+              <span v-else class="flex items-center gap-2">
+                <i class="fa-solid fa-scroll text-emerald-400"></i> Syarat & Ketentuan
+              </span>
             </h2>
-            <p class="text-[10px] text-white/40 mt-0.5 uppercase tracking-wider font-semibold">StaySafe.my.id — Peta Jakarta</p>
+            <p class="text-[10px] text-white/40 mt-0.5 uppercase tracking-wider font-semibold">StaySafe.my.id — Peta Indonesia</p>
           </div>
           <button
             @click="emit('update:modelValue', false)"
@@ -77,7 +81,7 @@ function handleBackdropClick(e) {
           <!-- SECTION 1: PRIVACY POLICY -->
           <div v-if="section === 'privacy'" class="space-y-5 animate-fadeIn">
             <div class="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/10 text-emerald-400/90 flex gap-3">
-              <span class="text-lg">🌿</span>
+              <span class="text-emerald-400 text-sm flex items-center"><i class="fa-solid fa-seedling"></i></span>
               <p class="font-medium text-[11px] leading-relaxed">
                 Prinsip utama kami sangat sederhana: <strong>Kami tidak tertarik untuk mengumpulkan data pribadi Anda.</strong> Aplikasi ini dirancang agar sepenuhnya anonim demi kenyamanan bersama.
               </p>
@@ -85,7 +89,7 @@ function handleBackdropClick(e) {
 
             <div class="space-y-3.5">
               <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <span>📍</span> Laporan Anda 100% Anonim
+                <i class="fa-solid fa-user-secret text-emerald-400 text-[11px]"></i> Laporan Anda 100% Anonim
               </h3>
               <ul class="list-disc pl-5 space-y-1.5 text-white/70">
                 <li>Kami <strong>tidak meminta</strong> nama, nomor telepon, alamat rumah, atau media sosial Anda saat melapor.</li>
@@ -96,7 +100,7 @@ function handleBackdropClick(e) {
 
             <div class="space-y-3.5">
               <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <span>🌐</span> GPS & Akses Lokasi Anda Aman
+                <i class="fa-solid fa-location-crosshairs text-emerald-400 text-[11px]"></i> GPS & Akses Lokasi Anda Aman
               </h3>
               <p class="text-white/70">
                 Untuk mempermudah Anda melihat lokasi saat ini (ditandai dengan titik biru berdenyut):
@@ -109,7 +113,7 @@ function handleBackdropClick(e) {
 
             <div class="space-y-3.5">
               <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <span>✉️</span> Masukan / Saran (Feedback)
+                <i class="fa-solid fa-envelope text-emerald-400 text-[11px]"></i> Masukan / Saran (Feedback)
               </h3>
               <p class="text-white/70">
                 Jika Anda mengirimkan saran, kritik, atau bug melalui tab Saran:
@@ -122,7 +126,7 @@ function handleBackdropClick(e) {
 
             <div class="space-y-3.5">
               <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <span>🔒</span> Layanan Pihak Ketiga (Peta & Keamanan)
+                <i class="fa-solid fa-lock text-emerald-400 text-[11px]"></i> Layanan Pihak Ketiga (Peta & Keamanan)
               </h3>
               <p class="text-white/70">
                 Agar aplikasi berjalan dengan lancar dan aman, kami menggunakan bantuan luar tepercaya:
@@ -138,7 +142,7 @@ function handleBackdropClick(e) {
           <!-- SECTION 2: TERMS OF SERVICE -->
           <div v-else class="space-y-5 animate-fadeIn">
             <div class="p-4 rounded-xl bg-amber-500/5 border border-amber-500/10 text-amber-400/90 flex gap-3">
-              <span class="text-lg">🤝</span>
+              <span class="text-amber-400 text-sm flex items-center"><i class="fa-solid fa-handshake"></i></span>
               <p class="font-medium text-[11px] leading-relaxed">
                 Demi kenyamanan dan keselamatan warga Jakarta, mohon untuk mematuhi aturan penggunaan sederhana ini agar informasi tetap akurat dan bermanfaat.
               </p>
@@ -146,7 +150,7 @@ function handleBackdropClick(e) {
 
             <div class="space-y-3.5">
               <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <span>👍</span> Gunakan Secara Bijak & Jujur
+                <i class="fa-solid fa-circle-check text-emerald-400 text-[11px]"></i> Gunakan Secara Bijak & Jujur
               </h3>
               <ul class="list-disc pl-5 space-y-1.5 text-white/70">
                 <li><strong>Dilarang Membuat Laporan Palsu (Hoax):</strong> Peta ini dibuat untuk keselamatan publik. Menyebarkan laporan bohong dapat memicu ketakutan massal yang tidak perlu.</li>
@@ -157,7 +161,7 @@ function handleBackdropClick(e) {
 
             <div class="space-y-3.5">
               <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <span>🚨</span> Bukan Saluran Darurat Utama
+                <i class="fa-solid fa-bell-slash text-rose-500 text-[11px]"></i> Bukan Saluran Darurat Utama
               </h3>
               <p class="text-white/70 font-semibold text-white/90">
                 StaySafe.my.id adalah alat pemantauan komunitas dan bukan pengganti layanan darurat instansi berwenang.
@@ -168,18 +172,18 @@ function handleBackdropClick(e) {
               <div class="grid grid-cols-2 gap-3 text-center pt-1">
                 <div class="p-2.5 rounded-xl bg-slate-950/60 border border-white/5">
                   <p class="text-[10px] text-white/40 uppercase">Kepolisian RI</p>
-                  <p class="text-sm font-bold text-emerald-400 mt-0.5">📞 110</p>
+                  <p class="text-sm font-bold text-emerald-400 mt-0.5"><i class="fa-solid fa-phone mr-1"></i> 110</p>
                 </div>
                 <div class="p-2.5 rounded-xl bg-slate-950/60 border border-white/5">
                   <p class="text-[10px] text-white/40 uppercase">Jakarta Siaga</p>
-                  <p class="text-sm font-bold text-emerald-400 mt-0.5">📞 112</p>
+                  <p class="text-sm font-bold text-emerald-400 mt-0.5"><i class="fa-solid fa-phone mr-1"></i> 112</p>
                 </div>
               </div>
             </div>
 
             <div class="space-y-3.5">
               <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <span>💡</span> Batasan Tanggung Jawab
+                <i class="fa-solid fa-scale-balanced text-emerald-400 text-[11px]"></i> Batasan Tanggung Jawab
               </h3>
               <ul class="list-disc pl-5 space-y-1.5 text-white/70">
                 <li><strong>Data Crowdsourced:</strong> Karena data peta dikirim oleh masyarakat, pengelola tidak dapat menjamin 100% kebenaran faktual secara instan di lapangan.</li>

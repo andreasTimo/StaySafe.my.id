@@ -63,7 +63,7 @@ function showToast(message, duration = 4000) {
 // Enable report click-to-pin mode
 function startReport() {
   setReportMode(true)
-  showToast('📍 Ketuk lokasi kejadian di peta untuk meletakkan pin.')
+  showToast('<i class="fa-solid fa-location-dot text-rose-500 animate-pulse mr-1"></i> Ketuk lokasi kejadian di peta untuk meletakkan pin.')
 }
 
 // Watch for clicked map coordinates to trigger form modal
@@ -91,9 +91,9 @@ async function handleSubmit(data) {
   try {
     await submitReport(data)
     formOpen.value = false
-    showToast('✅ Laporan Anda sukses terkirim!')
+    showToast('<i class="fa-solid fa-circle-check text-emerald-400 mr-1.5"></i> Laporan Anda sukses terkirim!')
   } catch (err) {
-    showToast('❌ Gagal mengirim laporan. Silakan coba kembali.')
+    showToast('<i class="fa-solid fa-circle-xmark text-rose-500 mr-1.5"></i> Gagal mengirim laporan. Silakan coba kembali.')
   }
 }
 
@@ -268,9 +268,9 @@ watch(map, (newMap) => {
     <Transition name="toast">
       <div
         v-if="toastVisible"
-        class="fixed bottom-[calc(8.5rem+env(safe-area-inset-bottom))] lg:bottom-28 left-1/2 -translate-x-1/2 z-[3000] bg-slate-900/85 backdrop-blur-xl border border-white/10 rounded-xl px-5 py-3.5 text-xs font-semibold text-white/90 shadow-2xl max-w-[90vw] text-center"
+        class="fixed bottom-[calc(8.5rem+env(safe-area-inset-bottom))] lg:bottom-28 left-1/2 -translate-x-1/2 z-[3000] bg-slate-900/85 backdrop-blur-xl border border-white/10 rounded-xl px-5 py-3.5 text-xs font-semibold text-white/90 shadow-2xl max-w-[90vw] text-center flex items-center justify-center gap-1.5"
+        v-html="toastMessage"
       >
-        {{ toastMessage }}
       </div>
     </Transition>
   </div>

@@ -176,7 +176,9 @@ function popupHtml(report) {
       </div>
       <p style="margin:0 0 10px;color:rgba(255,255,255,0.85);font-size:12.5px;font-weight:400;line-height:1.45">${report.description}</p>
       <div style="display:flex;flex-direction:column;gap:5px;font-size:11px;color:rgba(255,255,255,0.5);border-top:1px solid rgba(255,255,255,0.08);padding-top:6px">
-        <span style="color:#ffffff;font-weight:700;display:flex;align-items:center;gap:4px;font-size:12px">📍 ${report.address || 'Jakarta'}</span>
+        <span style="color:#ffffff;font-weight:700;display:flex;align-items:center;gap:5px;font-size:12px">
+          <i class="fa-solid fa-location-dot" style="color:#34d399"></i> ${report.address || 'Jakarta'}
+        </span>
         <div style="display:flex;justify-content:between;align-items:center;width:100%">
           <time>${relativeTime(report.createdAt)}</time>
         </div>
